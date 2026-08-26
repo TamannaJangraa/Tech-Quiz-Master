@@ -8,12 +8,28 @@ import { useNavigate } from "react-router-dom";
 
 const ADMIN_USER_ID = "user_3GzMxeTh7XrwPpPOEL0ybOpvvYN";
 
+// Production Admin URL
+const ADMIN_URL = "https://tech-quiz-master-admin.vercel.app";
+
 const Navbar = () => {
   const { isSignedIn, user, isLoaded } = useUser();
   const navigate = useNavigate();
 
   const handleAdminRedirect = () => {
-    window.location.href = "http://localhost:5174/";
+    // Local development
+    if (window.location.hostname === "localhost") {
+      const currentPort = window.location.port;
+
+      if (currentPort === "5173") {
+        window.location.href = "http://localhost:5174/";
+      } else {
+        window.location.href = "http://localhost:5173/";
+      }
+    } 
+    // Vercel production
+    else {
+      window.location.href = ADMIN_URL;
+    }
   };
 
   return (
