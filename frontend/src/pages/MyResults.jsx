@@ -25,7 +25,7 @@ const MyResults = () => {
 
         console.log("MY RESULTS:", data);
 
-        setResults(data);
+        setResults(data.results || data || []);
       } catch (err) {
         console.error("MY RESULTS ERROR:", err);
         setError(err.message || "Failed to load results");

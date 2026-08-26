@@ -27,7 +27,7 @@ const Leaderboard = () => {
 
         console.log("LEADERBOARD:", data);
 
-        setLeaderboard(data);
+        setLeaderboard(data.results || data || []);
       } catch (err) {
         console.error("LEADERBOARD ERROR:", err);
         setError(err.message || "Failed to load leaderboard");

@@ -1,13 +1,13 @@
 import Result from "../model/Result.js";
 import { getAuth } from "@clerk/express";
 
-// Create a result
 export const createMyResult = async (req, res) => {
   try {
     const { userId } = getAuth(req);
 
     if (!userId) {
       return res.status(400).json({
+        success: false,
         message: "User ID is required",
       });
     }
@@ -17,17 +17,17 @@ export const createMyResult = async (req, res) => {
       userId,
     });
 
-    res.json(result);
+    res.json({ success: true, result });
   } catch (err) {
     console.log("CREATE RESULT ERROR:", err);
 
     res.status(500).json({
-      error: "FAILED",
+      success: false,
+      message: "Failed to create result",
     });
   }
 };
 
-// Get results for the logged-in user
 export const getMyResults = async (req, res) => {
   try {
     const { userId } = getAuth(req);
@@ -38,17 +38,17 @@ export const getMyResults = async (req, res) => {
       createdAt: -1,
     });
 
-    res.json(results);
+    res.json({ success: true, results });
   } catch (err) {
     console.log("GET RESULTS ERROR:", err);
 
     res.status(500).json({
-      error: "FAILED",
+      success: false,
+      message: "Failed to load results",
     });
   }
 };
 
-// Get leaderboard
 export const getLeaderboard = async (req, res) => {
   try {
     const results = await Result.aggregate([
@@ -74,7 +74,6 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Har user ka best attempt rakhenge
       {
         $sort: {
           percentage: -1,
@@ -113,7 +112,6 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Final ranking
       {
         $sort: {
           percentage: -1,
@@ -127,11 +125,12 @@ export const getLeaderboard = async (req, res) => {
       },
     ]);
 
-    res.json(results);
+    res.json({ success: true, results });
   } catch (err) {
     console.log("LEADERBOARD ERROR:", err);
 
     res.status(500).json({
+      success: false,
       message: "Failed to load leaderboard",
     });
   }

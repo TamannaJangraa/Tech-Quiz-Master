@@ -76,7 +76,7 @@ export const clerkWebhook = async (req, res) => {
 
     } catch (err) {
         console.log("WEBHOOK ERROR", err);
-        res.status(500).json({ msg: "Internal Server Error" });
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
  

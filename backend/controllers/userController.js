@@ -8,7 +8,8 @@ export const getStats = async (req, res) => {
 
     if (!userId) {
       return res.status(401).json({
-        msg: "Unauthorized",
+        success: false,
+        message: "Unauthorized",
       });
     }
 
@@ -53,6 +54,7 @@ export const getStats = async (req, res) => {
         : "0.00";
 
     res.json({
+      success: true,
       totalUsers,
       loggedInUsers,
       totalQuestions,
@@ -62,7 +64,8 @@ export const getStats = async (req, res) => {
     console.error("Admin stats error:", err);
 
     res.status(500).json({
-      msg: "Internal Server Error",
+      success: false,
+      message: "Internal Server Error",
     });
   }
 };
