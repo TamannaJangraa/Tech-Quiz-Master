@@ -1,4 +1,4 @@
-const BASE_URL = "/api";
+const BASE_URL = "https://tech-quiz-master-bcknd.vercel.app/api";
 
 export const apiRequest = async (
   endpoint,
