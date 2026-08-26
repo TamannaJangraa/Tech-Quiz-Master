@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useApi } from "../services/api/api.js";
 import Navbar from "./navbar.jsx";
 import { useAuth } from "@clerk/react";
 import { apiRequest } from "../services/api/api.js";
@@ -115,7 +114,6 @@ const Dashboard = () => {
   const [loadingStats, setLoadingStats] = useState(true);
 
   const fileInputRef = useRef(null);
-  const { request } = useApi();
 
   useEffect(() => {
     document.title = "Admin Dashboard | Tech Quiz Master";
@@ -148,7 +146,7 @@ const Dashboard = () => {
     };
 
     loadStats();
-  }, []);
+  }, [getToken]);
 
   useEffect(() => {
     if (!toast.show) return;
@@ -512,10 +510,13 @@ const Dashboard = () => {
         totalQuestions: questions.length,
       };
 
-      await request(
+      const token = await getToken();
+
+      await apiRequest(
         "/admin/upload-quiz",
         "POST",
-        payload
+        payload,
+        token
       );
 
       setToast({
