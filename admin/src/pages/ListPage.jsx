@@ -18,6 +18,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/react";
 
+const BASE_URL = "https://tech-quiz-master-bcknd.vercel.app/api";
+
 const levelToKey = {
   basic: "easy",
   intermediate: "medium",
@@ -79,7 +81,7 @@ const ListPage = () => {
       const token = await getToken();
 
       const response = await fetch(
-        "http://localhost:8080/api/admin/quizzes",
+        `${BASE_URL}/admin/quizzes`,
         {
           headers: token
             ? {
@@ -128,7 +130,7 @@ const ListPage = () => {
       const token = await getToken();
 
       const response = await fetch(
-        `http://localhost:8080/api/admin/quiz/${id}`,
+        `${BASE_URL}/admin/quiz/${id}`,
         {
           method: "DELETE",
           headers: token
@@ -215,7 +217,7 @@ const ListPage = () => {
       <section className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-7 sm:py-9">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            
+
             <div className="flex items-start sm:items-center gap-4">
               <div className="w-14 h-14 shrink-0 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-sm">
                 <LayoutList className="w-7 h-7 text-white" />
@@ -247,6 +249,7 @@ const ListPage = () => {
 
         {/* SUMMARY */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+
           <div className="bg-white border border-slate-200 rounded-2xl p-5">
             <p className="text-sm font-medium text-slate-500">
               Total Quizzes
@@ -278,6 +281,7 @@ const ListPage = () => {
                 : filterLevel}
             </p>
           </div>
+
         </div>
 
         {/* SEARCH AND FILTER */}
@@ -337,6 +341,7 @@ const ListPage = () => {
                 </button>
               )}
             </div>
+
           </div>
         </div>
 
@@ -424,6 +429,7 @@ const ListPage = () => {
           !error &&
           filteredQuizzes.length === 0 && (
             <div className="bg-white border border-slate-200 rounded-2xl p-10 sm:p-16 text-center">
+
               <div className="w-20 h-20 mx-auto rounded-full bg-indigo-50 flex items-center justify-center mb-6">
                 <Inbox className="w-10 h-10 text-indigo-500" />
               </div>
@@ -460,6 +466,7 @@ const ListPage = () => {
                   </>
                 )}
               </button>
+
             </div>
           )}
 
@@ -468,6 +475,7 @@ const ListPage = () => {
           !error &&
           filteredQuizzes.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
               {filteredQuizzes.map((quiz) => {
                 const rawLevel = (
                   quiz.difficulty ||
@@ -517,11 +525,13 @@ const ListPage = () => {
                     key={quiz.id}
                     className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col"
                   >
+
                     {/* CARD HEADER */}
                     <div className="p-6 bg-slate-900">
                       <div className="flex items-start justify-between gap-4">
 
                         <div className="flex items-center gap-3 min-w-0">
+
                           <div className="w-11 h-11 shrink-0 rounded-xl bg-white/10 flex items-center justify-center">
                             <FileQuestion className="w-6 h-6 text-white" />
                           </div>
@@ -537,6 +547,7 @@ const ListPage = () => {
                               </p>
                             )}
                           </div>
+
                         </div>
 
                         <div
@@ -548,6 +559,7 @@ const ListPage = () => {
 
                           {difficulty.label}
                         </div>
+
                       </div>
                     </div>
 
@@ -559,6 +571,7 @@ const ListPage = () => {
                         <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
                           <div className="flex items-center gap-2 text-slate-500">
                             <Clock className="w-4 h-4" />
+
                             <span className="text-xs font-medium">
                               Time Limit
                             </span>
@@ -572,6 +585,7 @@ const ListPage = () => {
                         <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
                           <div className="flex items-center gap-2 text-slate-500">
                             <FileQuestion className="w-4 h-4" />
+
                             <span className="text-xs font-medium">
                               Questions
                             </span>
@@ -594,6 +608,7 @@ const ListPage = () => {
 
                       {/* CARD ACTION */}
                       <div className="mt-auto pt-6 flex items-center justify-between border-t border-slate-100">
+
                         <span className="text-xs text-slate-400">
                           Quiz ID: {String(quiz.id).slice(-6)}
                         </span>
@@ -610,12 +625,14 @@ const ListPage = () => {
                           <Trash2 className="w-4 h-4" />
                           Delete
                         </button>
+
                       </div>
 
                     </div>
                   </article>
                 );
               })}
+
             </div>
           )}
 
