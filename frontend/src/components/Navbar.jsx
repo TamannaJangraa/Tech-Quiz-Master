@@ -47,7 +47,7 @@ const Navbar = () => {
         {/* My Results - Logged in user */}
         {isLoaded && isSignedIn && (
           <button
-            onClick={() => navigate("/results")}
+            onClick={() => navigate("/my-results")}
             className="text-gray-700 font-medium hover:text-indigo-600"
           >
             My Results
