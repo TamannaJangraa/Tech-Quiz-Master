@@ -15,31 +15,13 @@ const Result = () => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  const { quiz, answers } = location.state || {};
+  const { quiz, answers, playerName } = location.state || {};
 
   const [saved, setSaved] = useState(false);
 
-  // Directly Result page open hone par
-  if (!quiz || !answers) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-        <h2 className="text-2xl font-bold text-gray-800">
-          No quiz result found
-        </h2>
-
-        <button
-          onClick={() => navigate("/")}
-          className="mt-5 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
-        >
-          Go Home
-        </button>
-      </div>
-    );
-  }
-
   // Score calculate
-  const correctAnswers = quiz.questions.filter((question, index) => {
-    const selectedAnswer = answers[index];
+  const correctAnswers = quiz?.questions?.filter((question, index) => {
+    const selectedAnswer = answers?.[index];
 
     if (question.answerText) {
       return selectedAnswer === question.answerText;
@@ -50,23 +32,27 @@ const Result = () => {
     );
 
     return selectedAnswer === question.options?.[answerIndex];
-  });
+  }) || [];
 
   const score = correctAnswers.length;
-  const totalQuestions = quiz.questions.length;
+  const totalQuestions = quiz?.questions?.length || 0;
   const wrongAnswers = totalQuestions - score;
 
-  const percentage = Math.round(
-    (score / totalQuestions) * 100
-  );
+  const percentage =
+    totalQuestions > 0
+      ? Math.round((score / totalQuestions) * 100)
+      : 0;
 
-  // Result backend + MongoDB me save
+  // Save result
   useEffect(() => {
+    if (!quiz || !answers || !playerName) return;
+
     const saveResult = async () => {
       try {
         const token = await getToken();
 
         const resultData = {
+          playerName: playerName,
           technology: quiz.technology,
           level: quiz.level,
           totalQuestions: totalQuestions,
@@ -89,25 +75,41 @@ const Result = () => {
 
         setSaved(true);
       } catch (error) {
-        console.error(
-          "SAVE RESULT ERROR:",
-          error
-        );
+        console.error("SAVE RESULT ERROR:", error);
       }
     };
 
-    // Duplicate save prevent karne ke liye
     if (!saved) {
       saveResult();
     }
   }, [
     getToken,
     quiz,
+    answers,
+    playerName,
     totalQuestions,
     score,
     wrongAnswers,
     saved,
   ]);
+
+  // Direct result page open
+  if (!quiz || !answers || !playerName) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+        <h2 className="text-2xl font-bold text-gray-800">
+          No quiz result found
+        </h2>
+
+        <button
+          onClick={() => navigate("/")}
+          className="mt-5 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+        >
+          Go Home
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
@@ -115,6 +117,7 @@ const Result = () => {
 
         {/* Result Summary */}
         <div className="rounded-2xl bg-white p-8 text-center shadow-md">
+
           <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-yellow-100">
             <Trophy
               size={42}
@@ -130,6 +133,10 @@ const Result = () => {
             Here is your result for the {quiz.technology} quiz
           </p>
 
+          <p className="mt-3 text-lg font-semibold text-indigo-600">
+            Player: {playerName}
+          </p>
+
           <div className="my-8">
             <p className="text-5xl font-bold text-indigo-600">
               {score} / {totalQuestions}
@@ -140,7 +147,6 @@ const Result = () => {
             </p>
           </div>
 
-          {/* Optional save status */}
           {saved && (
             <p className="mb-5 text-sm font-medium text-green-600">
               ✓ Result saved successfully
@@ -148,6 +154,7 @@ const Result = () => {
           )}
 
           <div className="flex flex-wrap justify-center gap-4">
+
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700"
@@ -163,6 +170,7 @@ const Result = () => {
               <RotateCcw size={18} />
               Try Again
             </button>
+
           </div>
         </div>
 
@@ -174,6 +182,7 @@ const Result = () => {
 
           <div className="space-y-5">
             {quiz.questions.map((question, index) => {
+
               const selectedAnswer = answers[index];
 
               let correctAnswer = question.answerText;
@@ -196,6 +205,7 @@ const Result = () => {
                   className="rounded-2xl bg-white p-6 shadow-sm"
                 >
                   <div className="flex gap-3">
+
                     {isCorrect ? (
                       <CheckCircle className="shrink-0 text-green-500" />
                     ) : (
@@ -203,11 +213,13 @@ const Result = () => {
                     )}
 
                     <div className="flex-1">
+
                       <h3 className="font-semibold text-gray-900">
                         {index + 1}. {question.question}
                       </h3>
 
                       <div className="mt-4 space-y-2 text-sm">
+
                         <p>
                           <span className="font-semibold text-gray-600">
                             Your answer:
@@ -235,6 +247,7 @@ const Result = () => {
                             </span>
                           </p>
                         )}
+
                       </div>
                     </div>
                   </div>
@@ -243,6 +256,7 @@ const Result = () => {
             })}
           </div>
         </div>
+
       </div>
     </div>
   );

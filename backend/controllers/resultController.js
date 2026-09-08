@@ -1,13 +1,13 @@
 import Result from "../model/Result.js";
 import { getAuth } from "@clerk/express";
 
+// Create a result
 export const createMyResult = async (req, res) => {
   try {
     const { userId } = getAuth(req);
 
     if (!userId) {
       return res.status(400).json({
-        success: false,
         message: "User ID is required",
       });
     }
@@ -17,17 +17,17 @@ export const createMyResult = async (req, res) => {
       userId,
     });
 
-    res.json({ success: true, result });
+    res.json(result);
   } catch (err) {
     console.log("CREATE RESULT ERROR:", err);
 
     res.status(500).json({
-      success: false,
-      message: "Failed to create result",
+      error: "FAILED",
     });
   }
 };
 
+// Get results for the logged-in user
 export const getMyResults = async (req, res) => {
   try {
     const { userId } = getAuth(req);
@@ -38,20 +38,21 @@ export const getMyResults = async (req, res) => {
       createdAt: -1,
     });
 
-    res.json({ success: true, results });
+    res.json(results);
   } catch (err) {
     console.log("GET RESULTS ERROR:", err);
 
     res.status(500).json({
-      success: false,
-      message: "Failed to load results",
+      error: "FAILED",
     });
   }
 };
 
+// Get leaderboard
 export const getLeaderboard = async (req, res) => {
   try {
     const results = await Result.aggregate([
+      // Calculate percentage
       {
         $addFields: {
           percentage: {
@@ -74,6 +75,7 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
+      // Highest score first
       {
         $sort: {
           percentage: -1,
@@ -82,52 +84,113 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
+      // Best result of each user for EACH quiz
       {
         $group: {
-          _id: "$userId",
+          _id: {
+            userId: "$userId",
+            technology: "$technology",
+            level: "$level",
+          },
+
           userId: {
             $first: "$userId",
           },
+
           technology: {
             $first: "$technology",
           },
+
           level: {
             $first: "$level",
           },
+
           correct: {
             $first: "$correct",
           },
+
           wrong: {
             $first: "$wrong",
           },
+
           totalQuestions: {
             $first: "$totalQuestions",
           },
+
           percentage: {
             $first: "$percentage",
           },
+
           createdAt: {
             $first: "$createdAt",
           },
         },
       },
 
+      // Join with users collection
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "clerkID",
+          as: "user",
+        },
+      },
+
+      // Get only one user document
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // Send user's actual name
+      {
+        $addFields: {
+          userName: {
+            $ifNull: [
+              "$user.fullName",
+              "Unknown Player",
+            ],
+          },
+        },
+      },
+
+      // Sort again after grouping
       {
         $sort: {
+          technology: 1,
+          level: 1,
           percentage: -1,
           correct: -1,
           createdAt: 1,
         },
       },
 
+      // Don't limit the leaderboard
       {
-        $limit: 50,
+        $project: {
+          _id: 0,
+          userId: 1,
+          userName: 1,
+          technology: 1,
+          level: 1,
+          correct: 1,
+          wrong: 1,
+          totalQuestions: 1,
+          percentage: 1,
+          createdAt: 1,
+        },
       },
     ]);
 
-    res.json({ success: true, results });
+    res.json({
+      success: true,
+      results,
+    });
   } catch (err) {
-    console.log("LEADERBOARD ERROR:", err);
+    console.error("LEADERBOARD ERROR:", err);
 
     res.status(500).json({
       success: false,

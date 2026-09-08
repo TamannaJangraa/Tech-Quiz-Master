@@ -8,18 +8,18 @@ const Quiz = () => {
   const { getToken } = useAuth();
   const navigate = useNavigate();
 
-  // सभी quizzes store करने के लिए
   const [quizzes, setQuizzes] = useState([]);
-
-  // Selected quiz
   const [quiz, setQuiz] = useState(null);
+
+  const [playerName, setPlayerName] = useState("");
+  const [nameSubmitted, setNameSubmitted] = useState(false);
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // सभी quizzes load करना
+  // Load quizzes
   useEffect(() => {
     const loadQuizzes = async () => {
       try {
@@ -43,9 +43,7 @@ const Quiz = () => {
           return;
         }
 
-        // सभी quizzes save करो
         setQuizzes(availableQuizzes);
-
       } catch (err) {
         console.error("QUIZ ERROR:", err);
         setError(err.message || "Failed to load quizzes");
@@ -57,13 +55,24 @@ const Quiz = () => {
     loadQuizzes();
   }, [getToken]);
 
-  // User quiz select करेगा
+  // Name submit
+  const handleNameSubmit = () => {
+    const trimmedName = playerName.trim();
+
+    if (!trimmedName) {
+      alert("Please enter your name before starting the quiz.");
+      return;
+    }
+
+    setPlayerName(trimmedName);
+    setNameSubmitted(true);
+  };
+
+  // Select quiz
   const handleSelectQuiz = (selectedQuiz) => {
     console.log("SELECTED QUIZ:", selectedQuiz);
 
     setQuiz(selectedQuiz);
-
-    // नया quiz शुरू होने पर सब reset
     setCurrentQuestion(0);
     setAnswers([]);
   };
@@ -79,7 +88,7 @@ const Quiz = () => {
     console.log("SELECTED ANSWER:", answer);
   };
 
-  // Next Question
+  // Next question
   const handleNext = () => {
     if (currentQuestion < quiz.questions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
@@ -88,6 +97,7 @@ const Quiz = () => {
         state: {
           quiz,
           answers,
+          playerName,
         },
       });
     }
@@ -106,9 +116,7 @@ const Quiz = () => {
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h2 className="text-xl font-semibold">
-          {error}
-        </h2>
+        <h2 className="text-xl font-semibold">{error}</h2>
 
         <button
           onClick={() => navigate("/")}
@@ -116,6 +124,50 @@ const Quiz = () => {
         >
           Go Home
         </button>
+      </div>
+    );
+  }
+
+  // =========================
+  // NAME SCREEN
+  // =========================
+
+  if (!nameSubmitted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+          <h1 className="text-3xl font-bold text-center text-gray-900">
+            Welcome to Tech Quiz Master 🎯
+          </h1>
+
+          <p className="text-center text-gray-500 mt-3 mb-8">
+            Enter your name before starting the quiz
+          </p>
+
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Your Name
+          </label>
+
+          <input
+            type="text"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleNameSubmit();
+              }
+            }}
+            placeholder="Enter your full name"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+
+          <button
+            onClick={handleNameSubmit}
+            className="w-full mt-5 px-5 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
+          >
+            Continue to Quiz
+          </button>
+        </div>
       </div>
     );
   }
@@ -129,13 +181,22 @@ const Quiz = () => {
       <div className="min-h-screen bg-gray-50 px-4 py-10">
         <div className="max-w-4xl mx-auto">
 
-          <h1 className="text-3xl font-bold text-center mb-3">
-            Choose Your Quiz
-          </h1>
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold">
+              Choose Your Quiz
+            </h1>
 
-          <p className="text-gray-500 text-center mb-10">
-            Select a technology and start your quiz
-          </p>
+            <p className="text-gray-500 mt-2">
+              Welcome,{" "}
+              <span className="font-semibold text-indigo-600">
+                {playerName}
+              </span>
+            </p>
+
+            <p className="text-gray-500 mt-1">
+              Select a technology and start your quiz
+            </p>
+          </div>
 
           <div className="grid md:grid-cols-2 gap-6">
             {quizzes.map((item) => (
@@ -189,6 +250,10 @@ const Quiz = () => {
             <p className="text-gray-500">
               Question {currentQuestion + 1} of{" "}
               {quiz.questions.length}
+            </p>
+
+            <p className="text-sm text-indigo-600 font-medium mt-1">
+              Player: {playerName}
             </p>
           </div>
 

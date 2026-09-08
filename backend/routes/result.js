@@ -1,21 +1,31 @@
-import express from "express";
-import {
-  createMyResult,
-  getMyResults,
-  getLeaderboard,
-} from "../controllers/resultController.js";
+import mongoose from "mongoose";
 
-import { protect } from "../middleware/auth.js";
+const resultSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+    },
 
-const router = express.Router();
+    playerName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-// Create a result
-router.post("/save-result", protect, createMyResult);
+    technology: String,
+    level: String,
+    totalQuestions: Number,
+    correct: Number,
+    wrong: Number,
+    timeTaken: Number,
+    startDate: Date,
+  },
+  {
+    timestamps: true,
+  }
+);
 
-// Get results for logged-in user
-router.get("/my-results", protect, getMyResults);
+const Result = mongoose.model("Result", resultSchema);
 
-// Get leaderboard
-router.get("/leaderboard", protect, getLeaderboard);
-
-export default router;
+export default Result;
