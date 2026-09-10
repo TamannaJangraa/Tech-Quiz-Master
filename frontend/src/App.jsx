@@ -6,6 +6,7 @@ import Quiz from "./pages/Quiz";
 import Result from "./pages/Result";
 import MyResults from "./pages/MyResults";
 import Leaderboard from "./pages/leaderboard";
+import Register from "./pages/Register";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
       <Route path="/result" element={<Result />} />
       <Route path="/my-results" element={<MyResults />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
   );
 };

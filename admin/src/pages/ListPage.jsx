@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/navbar";
+import Navbar from "../components/Navbar.jsx";
+
 import {
   FileQuestion,
   Clock,
@@ -18,7 +19,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/react";
 
-const BASE_URL = "https://tech-quiz-master-bcknd.vercel.app/api";
+const IS_LOCAL = window.location.hostname === "localhost";
+const BASE_URL = IS_LOCAL
+  ? "http://localhost:8080/api"
+  : "https://tech-quiz-master-bcknd.vercel.app/api";
 
 const levelToKey = {
   basic: "easy",

@@ -1,12 +1,14 @@
-import express from 'express';
-import { clerkWebhook } from '../controllers/webhook.js';
+import express from "express";
+import {
+  clerkWebhook,
+  updateActivity,
+  registerStudent,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
-// Webhook route - uses raw body parser (no clerk middleware here!)
-router.post('/webhook', 
-    express.raw({ type: 'application/json' }),
-    clerkWebhook
-);
+router.post("/webhook", clerkWebhook);
+router.post("/activity", updateActivity);
+router.post("/register", registerStudent);
 
 export default router;

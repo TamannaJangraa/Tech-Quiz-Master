@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@clerk/react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../services/api";
+import Navbar from "../components/Navbar";
 
 const MyResults = () => {
   const { getToken } = useAuth();
@@ -39,32 +40,39 @@ const MyResults = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading your results...
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex items-center justify-center">
+          Loading your results...
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-red-600 font-semibold">
-          {error}
-        </p>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4 px-4">
+          <p className="text-red-600 font-semibold">
+            {error}
+          </p>
 
-        <button
-          onClick={() => navigate("/")}
-          className="px-5 py-2 bg-indigo-600 text-white rounded-lg"
-        >
-          Go Home
-        </button>
+          <button
+            onClick={() => navigate("/")}
+            className="px-5 py-2 bg-indigo-600 text-white rounded-lg"
+          >
+            Go Home
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="mx-auto max-w-4xl">
+      <Navbar />
+      <div className="mx-auto max-w-4xl mt-6">
 
         <div className="flex items-center justify-between mb-8">
           <div>

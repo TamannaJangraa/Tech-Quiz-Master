@@ -1,21 +1,43 @@
 import express from "express";
-import { getStats } from "../controllers/userController.js";
+
+import {
+  getStats,
+  getDashboardDetails,
+} from "../controllers/userController.js";
+
 import {
   deleteQuiz,
   uploadQuiz,
   getAllQuizzes,
 } from "../controllers/adminController.js";
+
 import { protect, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Admin routes
+// ========================================
+// ADMIN ROUTES
+// ========================================
+
 router.post("/upload-quiz", protect, isAdmin, uploadQuiz);
+
 router.get("/stats", protect, isAdmin, getStats);
+
+router.get(
+  "/details",
+  protect,
+  isAdmin,
+  getDashboardDetails
+);
+
 router.get("/quizzes", protect, isAdmin, getAllQuizzes);
+
 router.delete("/quiz/:id", protect, isAdmin, deleteQuiz);
 
-// Public/User quiz route
+// ========================================
+// PUBLIC / USER QUIZ ROUTE
+// ========================================
+
 router.get("/public-quizzes", protect, getAllQuizzes);
 
 export default router;

@@ -1,4 +1,7 @@
-const BASE_URL = "https://tech-quiz-master-bcknd.vercel.app/api";
+const IS_LOCAL = window.location.hostname === "localhost";
+const BASE_URL = IS_LOCAL
+  ? "http://localhost:8080/api"
+  : "https://tech-quiz-master-bcknd.vercel.app/api";
 
 export const apiRequest = async (
   endpoint,
@@ -30,4 +33,8 @@ export const apiRequest = async (
   }
 
   return response.json();
+};
+
+export const registerStudent = async (data, token) => {
+  return apiRequest("/users/register", "POST", data, token);
 };

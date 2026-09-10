@@ -74,6 +74,16 @@ const Navbar = () => {
             </button>
           )}
 
+        {/* Register - Only for signed out users */}
+        {isLoaded && !isSignedIn && (
+          <button
+            onClick={() => navigate("/register")}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            Register
+          </button>
+        )}
+
         {/* Login / User */}
         {!isLoaded ? (
           <p className="text-gray-500">Loading...</p>

@@ -53,6 +53,6 @@ const quizSchema = new mongoose.Schema({
     }
 },{timestamps:true});
 quizSchema.index({technology: 1, level: 1},{unique: true});
-export default mongoose.model("Quiz", quizSchema);
+export default mongoose.models.Quiz || mongoose.model("Quiz", quizSchema);
 
 

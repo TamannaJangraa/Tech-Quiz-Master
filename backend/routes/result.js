@@ -1,31 +1,15 @@
-import mongoose from "mongoose";
+import express from "express";
+import {
+  createMyResult,
+  getMyResults,
+  getLeaderboard,
+} from "../controllers/resultController.js";
+import { protect } from "../middleware/auth.js";
 
-const resultSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: String,
-      required: true,
-    },
+const router = express.Router();
 
-    playerName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+router.post("/save-result", protect, createMyResult);
+router.get("/my-results", protect, getMyResults);
+router.get("/leaderboard", protect, getLeaderboard);
 
-    technology: String,
-    level: String,
-    totalQuestions: Number,
-    correct: Number,
-    wrong: Number,
-    timeTaken: Number,
-    startDate: Date,
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const Result = mongoose.model("Result", resultSchema);
-
-export default Result;
+export default router;

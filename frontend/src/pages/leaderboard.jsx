@@ -3,6 +3,7 @@ import { useAuth, useUser } from "@clerk/react";
 import { useNavigate } from "react-router-dom";
 import { Trophy, Home } from "lucide-react";
 import { apiRequest } from "../services/api";
+import Navbar from "../components/Navbar";
 
 const normalize = (value) => {
   return String(value || "")
@@ -214,44 +215,48 @@ const Leaderboard = () => {
   // =====================================
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Trophy
-            size={50}
-            className="mx-auto mb-4 text-indigo-600 animate-bounce"
-          />
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex items-center justify-center">
+          <div className="text-center">
+            <Trophy
+              size={50}
+              className="mx-auto mb-4 text-indigo-600 animate-bounce"
+            />
 
-          <p className="text-gray-600">
-            Loading leaderboard...
-          </p>
+            <p className="text-gray-600">
+              Loading leaderboard...
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
-  // =====================================
-  // ERROR
-  // =====================================
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50">
-        <p className="text-red-600 font-semibold">
-          {error}
-        </p>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4 px-4">
+          <p className="text-red-600 font-semibold">
+            {error}
+          </p>
 
-        <button
-          onClick={() => navigate("/")}
-          className="px-5 py-2 bg-indigo-600 text-white rounded-lg"
-        >
-          Go Home
-        </button>
+          <button
+            onClick={() => navigate("/")}
+            className="px-5 py-2 bg-indigo-600 text-white rounded-lg"
+          >
+            Go Home
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="mx-auto max-w-5xl">
+      <Navbar />
+      <div className="mx-auto max-w-5xl mt-6">
 
         {/* =====================================
             HEADER

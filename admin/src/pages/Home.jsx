@@ -1,6 +1,6 @@
 import React from 'react';
-import Navbar from '../components/navbar';
-import Hero from '../components/hero';
+import Navbar from '../components/Navbar.jsx';
+import Hero from '../components/hero.jsx';
 
 const Home = () => {
   return (

@@ -80,13 +80,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// --- CRITICAL FIX: PARSER AND CLERK MIDDLEWARE MOVED UP ---
+app.use(express.json());
+app.use(clerkMiddleware());
+
 app.use(ensureDBConnection);
 
+// --- ROUTES MOUNTED AFTER PARSER ---
 app.use("/api/users", webhookRoutes);
-
-app.use(clerkMiddleware());
-app.use(express.json());
-
 app.use("/api/admin", adminRoutes);
 app.use("/api/results", resultRoutes);
 

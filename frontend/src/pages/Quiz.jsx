@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@clerk/react";
+import { useAuth, useUser, SignInButton } from "@clerk/react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../services/api";
 import Question from "../components/Question";
+import Navbar from "../components/Navbar";
 
 const Quiz = () => {
   const { getToken } = useAuth();
+  const { isLoaded, isSignedIn } = useUser();
   const navigate = useNavigate();
 
   const [quizzes, setQuizzes] = useState([]);
@@ -103,11 +105,44 @@ const Quiz = () => {
     }
   };
 
+  // Auth guard
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            Login Required
+          </h2>
+          <p className="text-gray-600 mb-5">
+            Please sign in before starting the quiz.
+          </p>
+          <SignInButton mode="modal">
+            <button className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              Login
+            </button>
+          </SignInButton>
+        </div>
+      </div>
+    );
+  }
+
   // Loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading quizzes...
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex items-center justify-center">
+          Loading quizzes...
+        </div>
       </div>
     );
   }
@@ -115,15 +150,18 @@ const Quiz = () => {
   // Error
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h2 className="text-xl font-semibold">{error}</h2>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4 px-4">
+          <h2 className="text-xl font-semibold">{error}</h2>
 
-        <button
-          onClick={() => navigate("/")}
-          className="px-5 py-2 bg-indigo-600 text-white rounded-lg"
-        >
-          Go Home
-        </button>
+          <button
+            onClick={() => navigate("/")}
+            className="px-5 py-2 bg-indigo-600 text-white rounded-lg"
+          >
+            Go Home
+          </button>
+        </div>
       </div>
     );
   }
@@ -134,17 +172,19 @@ const Quiz = () => {
 
   if (!nameSubmitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
-          <h1 className="text-3xl font-bold text-center text-gray-900">
-            Welcome to Tech Quiz Master 🎯
-          </h1>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="min-h-[80vh] flex items-center justify-center px-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+            <h1 className="text-3xl font-bold text-center text-gray-900">
+              Welcome to Tech Quiz Master 🎯
+            </h1>
 
-          <p className="text-center text-gray-500 mt-3 mb-8">
-            Enter your name before starting the quiz
-          </p>
+            <p className="text-center text-gray-500 mt-3 mb-8">
+              Enter your name before starting the quiz
+            </p>
 
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
             Your Name
           </label>
 
@@ -168,6 +208,7 @@ const Quiz = () => {
             Continue to Quiz
           </button>
         </div>
+        </div>
       </div>
     );
   }
@@ -179,7 +220,8 @@ const Quiz = () => {
   if (!quiz) {
     return (
       <div className="min-h-screen bg-gray-50 px-4 py-10">
-        <div className="max-w-4xl mx-auto">
+        <Navbar />
+        <div className="max-w-4xl mx-auto mt-6">
 
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold">
@@ -239,7 +281,8 @@ const Quiz = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-3xl mx-auto">
+      <Navbar />
+      <div className="max-w-3xl mx-auto mt-6">
 
         <div className="flex justify-between items-center mb-8">
           <div>

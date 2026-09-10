@@ -9,6 +9,7 @@ import {
   Home,
 } from "lucide-react";
 import { apiRequest } from "../services/api";
+import Navbar from "../components/Navbar";
 
 const Result = () => {
   const location = useLocation();
@@ -96,24 +97,28 @@ const Result = () => {
   // Direct result page open
   if (!quiz || !answers || !playerName) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-        <h2 className="text-2xl font-bold text-gray-800">
-          No quiz result found
-        </h2>
+      <div className="min-h-screen bg-gray-50 px-4">
+        <Navbar />
+        <div className="min-h-[80vh] flex flex-col items-center justify-center">
+          <h2 className="text-2xl font-bold text-gray-800">
+            No quiz result found
+          </h2>
 
-        <button
-          onClick={() => navigate("/")}
-          className="mt-5 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
-        >
-          Go Home
-        </button>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-5 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+          >
+            Go Home
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="mx-auto max-w-4xl">
+      <Navbar />
+      <div className="mx-auto max-w-4xl mt-6">
 
         {/* Result Summary */}
         <div className="rounded-2xl bg-white p-8 text-center shadow-md">

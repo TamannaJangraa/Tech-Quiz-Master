@@ -130,6 +130,43 @@ const Navbar = ({
     };
   }, [isSignedIn, getToken, navigate, onNavigate]);
 
+  // Update student's last activity for the Admin Dashboard
+  useEffect(() => {
+    if (!isSignedIn) return;
+
+    let mounted = true;
+
+    const updateUserActivity = async () => {
+      try {
+        const token = await getToken();
+
+        if (!mounted) return;
+
+        await fetch("http://localhost:8080/api/users/activity", {
+          method: "POST",
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : {},
+        });
+      } catch (err) {
+        console.error("Activity update failed:", err);
+      }
+    };
+
+    // Mark the user active immediately after login/page load
+    updateUserActivity();
+
+    // Keep activity fresh while the user is using the site
+    const activityInterval = setInterval(updateUserActivity, 60000);
+
+    return () => {
+      mounted = false;
+      clearInterval(activityInterval);
+    };
+  }, [isSignedIn, getToken]);
+
   return (
     <nav className={navbarStyles.nav}>
       <div className={navbarStyles.container}>

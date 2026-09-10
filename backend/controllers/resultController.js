@@ -1,36 +1,57 @@
 import Result from "../model/Result.js";
 import { getAuth } from "@clerk/express";
 
-// Create a result
+// ========================================
+// CREATE / SUBMIT RESULT
+// ========================================
+
 export const createMyResult = async (req, res) => {
   try {
     const { userId } = getAuth(req);
 
     if (!userId) {
-      return res.status(400).json({
-        message: "User ID is required",
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
       });
     }
 
     const result = await Result.create({
       ...req.body,
       userId,
+      status: "submitted",
     });
 
-    res.json(result);
+    res.status(201).json({
+      success: true,
+      result,
+    });
+
   } catch (err) {
     console.log("CREATE RESULT ERROR:", err);
 
     res.status(500).json({
-      error: "FAILED",
+      success: false,
+      message: "Failed to save result",
     });
   }
 };
 
-// Get results for the logged-in user
+
+// ========================================
+// GET MY RESULTS
+// ========================================
+
 export const getMyResults = async (req, res) => {
   try {
     const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     const results = await Result.find({
       userId,
@@ -38,20 +59,30 @@ export const getMyResults = async (req, res) => {
       createdAt: -1,
     });
 
-    res.json(results);
+    res.json({
+      success: true,
+      results,
+    });
+
   } catch (err) {
     console.log("GET RESULTS ERROR:", err);
 
     res.status(500).json({
-      error: "FAILED",
+      success: false,
+      message: "Failed to load results",
     });
   }
 };
 
-// Get leaderboard
+
+// ========================================
+// GET LEADERBOARD
+// ========================================
+
 export const getLeaderboard = async (req, res) => {
   try {
     const results = await Result.aggregate([
+
       // Calculate percentage
       {
         $addFields: {
@@ -84,7 +115,7 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Best result of each user for EACH quiz
+      // Keep best result for each user + quiz
       {
         $group: {
           _id: {
@@ -95,6 +126,10 @@ export const getLeaderboard = async (req, res) => {
 
           userId: {
             $first: "$userId",
+          },
+
+          playerName: {
+            $first: "$playerName",
           },
 
           technology: {
@@ -127,7 +162,7 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Join with users collection
+      // Get user details
       {
         $lookup: {
           from: "users",
@@ -137,7 +172,6 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Get only one user document
       {
         $unwind: {
           path: "$user",
@@ -145,19 +179,24 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Send user's actual name
+      // Get actual user name
       {
         $addFields: {
           userName: {
             $ifNull: [
               "$user.fullName",
-              "Unknown Player",
+              {
+                $ifNull: [
+                  "$playerName",
+                  "Unknown Player",
+                ],
+              },
             ],
           },
         },
       },
 
-      // Sort again after grouping
+      // Final sorting
       {
         $sort: {
           technology: 1,
@@ -168,12 +207,13 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Don't limit the leaderboard
+      // Return required fields
       {
         $project: {
           _id: 0,
           userId: 1,
           userName: 1,
+          playerName: 1,
           technology: 1,
           level: 1,
           correct: 1,
@@ -189,6 +229,7 @@ export const getLeaderboard = async (req, res) => {
       success: true,
       results,
     });
+
   } catch (err) {
     console.error("LEADERBOARD ERROR:", err);
 
