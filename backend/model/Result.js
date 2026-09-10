@@ -1,42 +1,96 @@
-import express from "express";
+import mongoose from "mongoose";
 
-import {
-  startQuizAttempt,
-  createMyResult,
-  getMyResults,
-  getLeaderboard,
-} from "../controllers/resultController.js";
+const answerReviewSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  selectedAnswer: {
+    type: String,
+    default: "",
+  },
+  correctAnswer: {
+    type: String,
+    default: "",
+  },
+  isCorrect: {
+    type: Boolean,
+    default: false,
+  },
+  explanation: {
+    type: String,
+    default: "",
+  },
+}, { _id: false });
 
-import { protect } from "../middleware/auth.js";
-
-const router = express.Router();
-
-// Start a quiz attempt
-router.post(
-  "/start-attempt",
-  protect,
-  startQuizAttempt
+const resultSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
+    },
+    playerName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    technology: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+    level: {
+      type: String,
+      enum: ["Basic", "Intermediate", "Advanced"],
+      required: true,
+    },
+    totalQuestions: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    correct: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    wrong: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    timeTaken: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    answerReview: {
+      type: [answerReviewSchema],
+      default: [],
+    },
+    status: {
+      type: String,
+      enum: ["pending", "submitted"],
+      default: "pending",
+      index: true,
+    },
+  },
+  { timestamps: true }
 );
 
-// Submit quiz result
-router.post(
-  "/save-result",
-  protect,
-  createMyResult
-);
+resultSchema.index({ userId: 1, status: 1 });
+resultSchema.index({ technology: 1, level: 1 });
 
-// My results
-router.get(
-  "/my-results",
-  protect,
-  getMyResults
-);
-
-// Leaderboard
-router.get(
-  "/leaderboard",
-  protect,
-  getLeaderboard
-);
-
-export default router;
+export default mongoose.models.Result || mongoose.model("Result", resultSchema);
