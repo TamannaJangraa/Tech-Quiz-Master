@@ -22,44 +22,31 @@ const Navbar = ({
   const { getToken } = useAuth();
   const navigate = useNavigate();
 
-  // Close mobile menu on Escape
   // Update student's last activity for the Admin Dashboard
-useEffect(() => {
-  if (!isSignedIn) return;
+  useEffect(() => {
+    if (!isSignedIn) return;
 
-  let mounted = true;
+    let mounted = true;
 
-  const updateUserActivity = async () => {
-    try {
-      const token = await getToken();
+    const updateUserActivity = async () => {
+      try {
+        const token = await getToken();
+        if (!mounted || !token) return;
 
-      if (!mounted) return;
+        await apiRequest("/users/activity", "POST", null, token);
+      } catch (err) {
+        console.error("Activity update failed:", err);
+      }
+    };
 
-      await apiRequest(
-        "/users/activity",
-        "POST",
-        null,
-        token
-      );
-    } catch (err) {
-      console.error("Activity update failed:", err);
-    }
-  };
+    updateUserActivity();
+    const activityInterval = setInterval(updateUserActivity, 60000);
 
-  // Mark the user active immediately after login/page load
-  updateUserActivity();
-
-  // Keep activity fresh while the user is using the site
-  const activityInterval = setInterval(
-    updateUserActivity,
-    60000
-  );
-
-  return () => {
-    mounted = false;
-    clearInterval(activityInterval);
-  };
-}, [isSignedIn, getToken]);
+    return () => {
+      mounted = false;
+      clearInterval(activityInterval);
+    };
+  }, [isSignedIn, getToken]);
 
   // Close mobile menu on desktop resize
   useEffect(() => {
@@ -154,43 +141,6 @@ useEffect(() => {
       mounted = false;
     };
   }, [isSignedIn, getToken, navigate, onNavigate]);
-
-  // Update student's last activity for the Admin Dashboard
-  useEffect(() => {
-    if (!isSignedIn) return;
-
-    let mounted = true;
-
-    const updateUserActivity = async () => {
-      try {
-        const token = await getToken();
-
-        if (!mounted) return;
-
-        await fetch("http://localhost:8080/api/users/activity", {
-          method: "POST",
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : {},
-        });
-      } catch (err) {
-        console.error("Activity update failed:", err);
-      }
-    };
-
-    // Mark the user active immediately after login/page load
-    updateUserActivity();
-
-    // Keep activity fresh while the user is using the site
-    const activityInterval = setInterval(updateUserActivity, 60000);
-
-    return () => {
-      mounted = false;
-      clearInterval(activityInterval);
-    };
-  }, [isSignedIn, getToken]);
 
   return (
     <nav className={navbarStyles.nav}>

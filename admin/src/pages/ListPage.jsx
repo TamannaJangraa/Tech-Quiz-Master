@@ -17,12 +17,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@clerk/react";
-
-const IS_LOCAL = window.location.hostname === "localhost";
-const BASE_URL = IS_LOCAL
-  ? "http://localhost:8080/api"
-  : "https://tech-quiz-master-bcknd.vercel.app/api";
+import { useApi } from "../services/api/api.js";
 
 const levelToKey = {
   basic: "easy",
@@ -66,7 +61,7 @@ const formatDate = (date) => {
 
 const ListPage = () => {
   const navigate = useNavigate();
-  const { getToken } = useAuth();
+  const { request } = useApi();
 
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,24 +77,7 @@ const ListPage = () => {
       setLoading(true);
       setError(null);
 
-      const token = await getToken();
-
-      const response = await fetch(
-        `${BASE_URL}/admin/quizzes`,
-        {
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : {},
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await request("/admin/quizzes");
 
       const list = Array.isArray(data)
         ? data
@@ -131,23 +109,7 @@ const ListPage = () => {
     if (!confirmed) return;
 
     try {
-      const token = await getToken();
-
-      const response = await fetch(
-        `${BASE_URL}/admin/quiz/${id}`,
-        {
-          method: "DELETE",
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : {},
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      await request(`/admin/quiz/${id}`, "DELETE");
 
       setQuizzes((previous) =>
         previous.filter(
