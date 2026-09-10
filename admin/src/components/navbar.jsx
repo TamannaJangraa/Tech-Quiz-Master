@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { navbarStyles } from "../assets/dummyStyles";
+import { apiRequest } from "../services/api/api.js";
 import {
   useUser,
   useAuth,
@@ -22,19 +23,43 @@ const Navbar = ({
   const navigate = useNavigate();
 
   // Close mobile menu on Escape
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") {
-        setMobileOpen(false);
-      }
-    };
+  // Update student's last activity for the Admin Dashboard
+useEffect(() => {
+  if (!isSignedIn) return;
 
-    window.addEventListener("keydown", onKey);
+  let mounted = true;
 
-    return () => {
-      window.removeEventListener("keydown", onKey);
-    };
-  }, []);
+  const updateUserActivity = async () => {
+    try {
+      const token = await getToken();
+
+      if (!mounted) return;
+
+      await apiRequest(
+        "/users/activity",
+        "POST",
+        null,
+        token
+      );
+    } catch (err) {
+      console.error("Activity update failed:", err);
+    }
+  };
+
+  // Mark the user active immediately after login/page load
+  updateUserActivity();
+
+  // Keep activity fresh while the user is using the site
+  const activityInterval = setInterval(
+    updateUserActivity,
+    60000
+  );
+
+  return () => {
+    mounted = false;
+    clearInterval(activityInterval);
+  };
+}, [isSignedIn, getToken]);
 
   // Close mobile menu on desktop resize
   useEffect(() => {
