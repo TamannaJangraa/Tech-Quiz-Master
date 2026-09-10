@@ -1,53 +1,42 @@
-import mongoose from "mongoose";
+import express from "express";
 
-const resultSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: String,
-      required: true,
-    },
+import {
+  startQuizAttempt,
+  createMyResult,
+  getMyResults,
+  getLeaderboard,
+} from "../controllers/resultController.js";
 
-    technology: {
-      type: String,
-    },
+import { protect } from "../middleware/auth.js";
 
-    level: {
-      type: String,
-    },
+const router = express.Router();
 
-    totalQuestions: {
-      type: Number,
-    },
-
-    correct: {
-      type: Number,
-    },
-
-    wrong: {
-      type: Number,
-    },
-
-    timeTaken: {
-      type: Number,
-    },
-
-    startDate: {
-      type: Date,
-    },
-
-    // Quiz attempt status
-    // pending = quiz started but not submitted
-    // submitted = quiz successfully submitted
-    status: {
-      type: String,
-      enum: ["pending", "submitted"],
-      default: "pending",
-    },
-  },
-  {
-    timestamps: true,
-  }
+// Start a quiz attempt
+router.post(
+  "/start-attempt",
+  protect,
+  startQuizAttempt
 );
 
-export default mongoose.models.Result ||
-  mongoose.model("Result", resultSchema);
+// Submit quiz result
+router.post(
+  "/save-result",
+  protect,
+  createMyResult
+);
+
+// My results
+router.get(
+  "/my-results",
+  protect,
+  getMyResults
+);
+
+// Leaderboard
+router.get(
+  "/leaderboard",
+  protect,
+  getLeaderboard
+);
+
+export default router;

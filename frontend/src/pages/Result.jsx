@@ -16,7 +16,12 @@ const Result = () => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  const { quiz, answers, playerName } = location.state || {};
+  const {
+  quiz,
+  answers,
+  playerName,
+  attemptId,
+} = location.state || {};
 
   const [saved, setSaved] = useState(false);
 
@@ -51,17 +56,50 @@ const Result = () => {
     const saveResult = async () => {
       try {
         const token = await getToken();
+const answerReview = quiz.questions.map(
+  (question, index) => {
+    const selectedAnswer = answers?.[index] || "";
 
-        const resultData = {
-          playerName: playerName,
-          technology: quiz.technology,
-          level: quiz.level,
-          totalQuestions: totalQuestions,
-          correct: score,
-          wrong: wrongAnswers,
-          timeTaken: 0,
-          startDate: new Date(),
-        };
+    let correctAnswer = "";
+
+    if (question.answerText) {
+      correctAnswer = question.answerText;
+    } else if (question.answerKey) {
+      const answerIndex = ["A", "B", "C", "D"].indexOf(
+        question.answerKey
+      );
+
+      correctAnswer =
+        question.options?.[answerIndex] || "";
+    }
+
+    const isCorrect =
+      selectedAnswer === correctAnswer;
+
+    return {
+      question: question.question,
+      selectedAnswer,
+      correctAnswer,
+      isCorrect,
+      explanation:
+        question.explanation ||
+        `The correct answer is "${correctAnswer}". Review this concept and try the question again.`,
+    };
+  }
+);
+
+const resultData = {
+  attemptId: attemptId,
+  playerName: playerName,
+  technology: quiz.technology,
+  level: quiz.level,
+  totalQuestions: totalQuestions,
+  correct: score,
+  wrong: wrongAnswers,
+  timeTaken: 0,
+  startDate: new Date(),
+  answerReview,
+};
 
         console.log("SENDING RESULT:", resultData);
 

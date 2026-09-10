@@ -1,27 +1,66 @@
-import React, { useEffect, useState } from "react";
-import { useAuth, useUser, SignInButton } from "@clerk/react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  useAuth,
+  useUser,
+  SignInButton,
+} from "@clerk/react";
+
 import { useNavigate } from "react-router-dom";
+
 import { apiRequest } from "../services/api";
+
 import Question from "../components/Question";
 import Navbar from "../components/Navbar";
 
+const STORAGE_KEY = "techQuizPendingAttempt";
+
 const Quiz = () => {
   const { getToken } = useAuth();
+
   const { isLoaded, isSignedIn } = useUser();
+
   const navigate = useNavigate();
 
   const [quizzes, setQuizzes] = useState([]);
+
   const [quiz, setQuiz] = useState(null);
 
-  const [playerName, setPlayerName] = useState("");
-  const [nameSubmitted, setNameSubmitted] = useState(false);
+  const [playerName, setPlayerName] =
+    useState("");
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [nameSubmitted, setNameSubmitted] =
+    useState(false);
+
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
+
   const [answers, setAnswers] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] =
+    useState(true);
+
   const [error, setError] = useState("");
 
-  // Load quizzes
+  const [attemptId, setAttemptId] =
+    useState(null);
+
+  const [resumeAvailable, setResumeAvailable] =
+    useState(false);
+
+  const [startingAttempt, setStartingAttempt] =
+    useState(false);
+
+  const attemptStartedRef = useRef(false);
+
+  // ========================================
+  // LOAD QUIZZES
+  // ========================================
+
   useEffect(() => {
     const loadQuizzes = async () => {
       try {
@@ -34,21 +73,35 @@ const Quiz = () => {
           token
         );
 
-        console.log("FULL API RESPONSE:", data);
+        console.log(
+          "FULL API RESPONSE:",
+          data
+        );
 
-        const availableQuizzes = data.quizzes || [];
+        const availableQuizzes =
+          data.quizzes || [];
 
-        console.log("AVAILABLE QUIZZES:", availableQuizzes);
+        console.log(
+          "AVAILABLE QUIZZES:",
+          availableQuizzes
+        );
 
         if (availableQuizzes.length === 0) {
-          setError("No quiz available right now.");
+          setError(
+            "No quiz available right now."
+          );
+
           return;
         }
 
         setQuizzes(availableQuizzes);
       } catch (err) {
         console.error("QUIZ ERROR:", err);
-        setError(err.message || "Failed to load quizzes");
+
+        setError(
+          err.message ||
+            "Failed to load quizzes"
+        );
       } finally {
         setLoading(false);
       }
@@ -57,55 +110,344 @@ const Quiz = () => {
     loadQuizzes();
   }, [getToken]);
 
-  // Name submit
+  // ========================================
+  // CHECK FOR SAVED QUIZ
+  // ========================================
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+
+    const savedAttempt =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (savedAttempt) {
+      try {
+        const parsed =
+          JSON.parse(savedAttempt);
+
+        if (
+          parsed.quiz &&
+          parsed.attemptId
+        ) {
+          setResumeAvailable(true);
+        }
+      } catch (err) {
+        console.error(
+          "INVALID SAVED ATTEMPT:",
+          err
+        );
+
+        localStorage.removeItem(
+          STORAGE_KEY
+        );
+      }
+    }
+  }, [isSignedIn]);
+
+  // ========================================
+  // NAME SUBMIT
+  // ========================================
+
   const handleNameSubmit = () => {
-    const trimmedName = playerName.trim();
+    const trimmedName =
+      playerName.trim();
 
     if (!trimmedName) {
-      alert("Please enter your name before starting the quiz.");
+      alert(
+        "Please enter your name before starting the quiz."
+      );
+
       return;
     }
 
     setPlayerName(trimmedName);
+
     setNameSubmitted(true);
   };
 
-  // Select quiz
-  const handleSelectQuiz = (selectedQuiz) => {
-    console.log("SELECTED QUIZ:", selectedQuiz);
+  // ========================================
+  // SELECT QUIZ
+  // ========================================
+
+  const handleSelectQuiz = (
+    selectedQuiz
+  ) => {
+    console.log(
+      "SELECTED QUIZ:",
+      selectedQuiz
+    );
 
     setQuiz(selectedQuiz);
+
     setCurrentQuestion(0);
+
     setAnswers([]);
+
+    setAttemptId(null);
+
+    attemptStartedRef.current = false;
   };
 
-  // Answer select
-  const handleAnswer = (answer) => {
-    const updatedAnswers = [...answers];
+  // ========================================
+  // START PENDING ATTEMPT
+  // ========================================
 
-    updatedAnswers[currentQuestion] = answer;
+  const createPendingAttempt = async (
+    selectedQuiz
+  ) => {
+    if (
+      attemptStartedRef.current ||
+      startingAttempt
+    ) {
+      return null;
+    }
+
+    try {
+      setStartingAttempt(true);
+
+      const token = await getToken();
+
+      const data = await apiRequest(
+        "/results/start-attempt",
+        "POST",
+        {
+          playerName,
+          technology:
+            selectedQuiz.technology,
+          level: selectedQuiz.level,
+          totalQuestions:
+            selectedQuiz.questions?.length ||
+            0,
+        },
+        token
+      );
+
+      const newAttemptId =
+        data?.result?._id;
+
+      if (!newAttemptId) {
+        throw new Error(
+          "Attempt ID was not returned"
+        );
+      }
+
+      attemptStartedRef.current = true;
+
+      setAttemptId(newAttemptId);
+
+      return newAttemptId;
+    } catch (err) {
+      console.error(
+        "START ATTEMPT ERROR:",
+        err
+      );
+
+      alert(
+        "Unable to start quiz. Please try again."
+      );
+
+      return null;
+    } finally {
+      setStartingAttempt(false);
+    }
+  };
+
+  // ========================================
+  // ANSWER SELECT
+  // ========================================
+
+  const handleAnswer = async (
+    answer
+  ) => {
+    const updatedAnswers = [
+      ...answers,
+    ];
+
+    updatedAnswers[currentQuestion] =
+      answer;
 
     setAnswers(updatedAnswers);
 
-    console.log("SELECTED ANSWER:", answer);
+    // ----------------------------------------
+    // Create pending attempt on first answer
+    // ----------------------------------------
+
+    let currentAttemptId =
+      attemptId;
+
+    if (!currentAttemptId) {
+      currentAttemptId =
+        await createPendingAttempt(
+          quiz
+        );
+    }
+
+    // ----------------------------------------
+    // Save quiz progress locally
+    // ----------------------------------------
+
+    if (currentAttemptId) {
+      const progress = {
+        attemptId:
+          currentAttemptId,
+
+        quiz,
+
+        answers:
+          updatedAnswers,
+
+        currentQuestion,
+
+        playerName,
+
+        savedAt:
+          new Date().toISOString(),
+      };
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(progress)
+      );
+
+      setResumeAvailable(true);
+    }
+
+    console.log(
+      "SELECTED ANSWER:",
+      answer
+    );
   };
 
-  // Next question
+  // ========================================
+  // NEXT QUESTION
+  // ========================================
+
   const handleNext = () => {
-    if (currentQuestion < quiz.questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
+    if (
+      currentQuestion <
+      quiz.questions.length - 1
+    ) {
+      const nextQuestion =
+        currentQuestion + 1;
+
+      setCurrentQuestion(
+        nextQuestion
+      );
+
+      // Save current position
+      if (attemptId) {
+        const progress = {
+          attemptId,
+          quiz,
+          answers,
+          currentQuestion:
+            nextQuestion,
+          playerName,
+          savedAt:
+            new Date().toISOString(),
+        };
+
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(progress)
+        );
+      }
     } else {
+      // ----------------------------------------
+      // Quiz completed
+      // ----------------------------------------
+
+      localStorage.removeItem(
+        STORAGE_KEY
+      );
+
       navigate("/result", {
         state: {
           quiz,
           answers,
           playerName,
+          attemptId,
         },
       });
     }
   };
 
-  // Auth guard
+  // ========================================
+  // RESUME QUIZ
+  // ========================================
+
+  const handleResumeQuiz = () => {
+    try {
+      const savedAttempt =
+        localStorage.getItem(
+          STORAGE_KEY
+        );
+
+      if (!savedAttempt) {
+        setResumeAvailable(false);
+        return;
+      }
+
+      const parsed =
+        JSON.parse(savedAttempt);
+
+      if (
+        !parsed.quiz ||
+        !parsed.attemptId
+      ) {
+        localStorage.removeItem(
+          STORAGE_KEY
+        );
+
+        setResumeAvailable(false);
+
+        return;
+      }
+
+      setPlayerName(
+        parsed.playerName || ""
+      );
+
+      setQuiz(parsed.quiz);
+
+      setAnswers(
+        parsed.answers || []
+      );
+
+      setCurrentQuestion(
+        parsed.currentQuestion || 0
+      );
+
+      setAttemptId(
+        parsed.attemptId
+      );
+
+      attemptStartedRef.current =
+        true;
+
+      setNameSubmitted(true);
+
+      setResumeAvailable(false);
+    } catch (err) {
+      console.error(
+        "RESUME ERROR:",
+        err
+      );
+
+      localStorage.removeItem(
+        STORAGE_KEY
+      );
+
+      setResumeAvailable(false);
+    }
+  };
+
+  // ========================================
+  // AUTH GUARD
+  // ========================================
+
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -118,13 +460,17 @@ const Quiz = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
+
         <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-3">
             Login Required
           </h2>
+
           <p className="text-gray-600 mb-5">
-            Please sign in before starting the quiz.
+            Please sign in before starting
+            the quiz.
           </p>
+
           <SignInButton mode="modal">
             <button className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
               Login
@@ -135,11 +481,15 @@ const Quiz = () => {
     );
   }
 
-  // Loading
+  // ========================================
+  // LOADING
+  // ========================================
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
+
         <div className="min-h-[80vh] flex items-center justify-center">
           Loading quizzes...
         </div>
@@ -147,16 +497,24 @@ const Quiz = () => {
     );
   }
 
-  // Error
+  // ========================================
+  // ERROR
+  // ========================================
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
+
         <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4 px-4">
-          <h2 className="text-xl font-semibold">{error}</h2>
+          <h2 className="text-xl font-semibold">
+            {error}
+          </h2>
 
           <button
-            onClick={() => navigate("/")}
+            onClick={() =>
+              navigate("/")
+            }
             className="px-5 py-2 bg-indigo-600 text-white rounded-lg"
           >
             Go Home
@@ -166,61 +524,82 @@ const Quiz = () => {
     );
   }
 
-  // =========================
+  // ========================================
   // NAME SCREEN
-  // =========================
+  // ========================================
 
   if (!nameSubmitted) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
+
         <div className="min-h-[80vh] flex items-center justify-center px-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+
             <h1 className="text-3xl font-bold text-center text-gray-900">
               Welcome to Tech Quiz Master 🎯
             </h1>
 
             <p className="text-center text-gray-500 mt-3 mb-8">
-              Enter your name before starting the quiz
+              Enter your name before starting
+              the quiz
             </p>
 
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Your Name
-          </label>
+              Your Name
+            </label>
 
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleNameSubmit();
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) =>
+                setPlayerName(
+                  e.target.value
+                )
               }
-            }}
-            placeholder="Enter your full name"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleNameSubmit();
+                }
+              }}
+              placeholder="Enter your full name"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+            />
 
-          <button
-            onClick={handleNameSubmit}
-            className="w-full mt-5 px-5 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
-          >
-            Continue to Quiz
-          </button>
-        </div>
+            <button
+              onClick={
+                handleNameSubmit
+              }
+              className="w-full mt-5 px-5 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
+            >
+              Continue to Quiz
+            </button>
+
+            {resumeAvailable && (
+              <button
+                onClick={
+                  handleResumeQuiz
+                }
+                className="w-full mt-3 px-5 py-3 border border-indigo-200 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50"
+              >
+                Resume Previous Quiz
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
-  // =========================
+  // ========================================
   // QUIZ SELECTION SCREEN
-  // =========================
+  // ========================================
 
   if (!quiz) {
     return (
       <div className="min-h-screen bg-gray-50 px-4 py-10">
         <Navbar />
+
         <div className="max-w-4xl mx-auto mt-6">
 
           <div className="text-center mb-10">
@@ -236,7 +615,8 @@ const Quiz = () => {
             </p>
 
             <p className="text-gray-500 mt-1">
-              Select a technology and start your quiz
+              Select a technology and start
+              your quiz
             </p>
           </div>
 
@@ -255,14 +635,21 @@ const Quiz = () => {
                 </p>
 
                 <p className="text-gray-500 mb-5">
-                  {item.questions?.length || 0} Questions
+                  {item.questions?.length || 0}{" "}
+                  Questions
                 </p>
 
                 <button
-                  onClick={() => handleSelectQuiz(item)}
-                  className="w-full px-5 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  onClick={() =>
+                    handleSelectQuiz(item)
+                  }
+                  disabled={
+                    startingAttempt
+                  }
+                  className="w-full px-5 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
                 >
-                  Start {item.technology} Quiz
+                  Start{" "}
+                  {item.technology} Quiz
                 </button>
               </div>
             ))}
@@ -273,15 +660,17 @@ const Quiz = () => {
     );
   }
 
-  // =========================
+  // ========================================
   // QUIZ QUESTIONS SCREEN
-  // =========================
+  // ========================================
 
-  const question = quiz.questions[currentQuestion];
+  const question =
+    quiz.questions[currentQuestion];
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <Navbar />
+
       <div className="max-w-3xl mx-auto mt-6">
 
         <div className="flex justify-between items-center mb-8">
@@ -291,7 +680,8 @@ const Quiz = () => {
             </h1>
 
             <p className="text-gray-500">
-              Question {currentQuestion + 1} of{" "}
+              Question{" "}
+              {currentQuestion + 1} of{" "}
               {quiz.questions.length}
             </p>
 
@@ -307,14 +697,21 @@ const Quiz = () => {
 
         <Question
           question={question}
-          selectedAnswer={answers[currentQuestion]}
+          selectedAnswer={
+            answers[currentQuestion]
+          }
           onAnswer={handleAnswer}
         />
 
         <div className="flex justify-between mt-8">
 
           <button
-            onClick={() => setQuiz(null)}
+            onClick={() => {
+              setQuiz(null);
+              setAttemptId(null);
+              attemptStartedRef.current =
+                false;
+            }}
             className="px-5 py-3 border border-gray-300 rounded-lg hover:bg-gray-100"
           >
             Change Quiz
@@ -322,15 +719,25 @@ const Quiz = () => {
 
           <button
             onClick={handleNext}
-            disabled={!answers[currentQuestion]}
+            disabled={
+              !answers[currentQuestion] ||
+              startingAttempt
+            }
             className="px-6 py-3 bg-indigo-600 text-white rounded-lg disabled:bg-gray-400"
           >
-            {currentQuestion === quiz.questions.length - 1
+            {currentQuestion ===
+            quiz.questions.length - 1
               ? "Finish Quiz"
               : "Next Question"}
           </button>
 
         </div>
+
+        {attemptId && (
+          <p className="mt-5 text-center text-xs text-gray-400">
+            Your progress is automatically saved.
+          </p>
+        )}
 
       </div>
     </div>

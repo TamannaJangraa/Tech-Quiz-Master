@@ -2,6 +2,56 @@ import Result from "../model/Result.js";
 import { getAuth } from "@clerk/express";
 
 // ========================================
+// START QUIZ ATTEMPT
+// ========================================
+
+export const startQuizAttempt = async (req, res) => {
+  try {
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const {
+      playerName,
+      technology,
+      level,
+      totalQuestions,
+    } = req.body;
+
+    const result = await Result.create({
+      userId,
+      playerName,
+      technology,
+      level,
+      totalQuestions,
+      correct: 0,
+      wrong: 0,
+      timeTaken: 0,
+      startDate: new Date(),
+      answerReview: [],
+      status: "pending",
+    });
+
+    res.status(201).json({
+      success: true,
+      result,
+    });
+  } catch (err) {
+    console.error("START ATTEMPT ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to start quiz attempt",
+    });
+  }
+};
+
+// ========================================
 // CREATE / SUBMIT RESULT
 // ========================================
 
@@ -16,6 +66,62 @@ export const createMyResult = async (req, res) => {
       });
     }
 
+    const {
+      attemptId,
+      playerName,
+      technology,
+      level,
+      totalQuestions,
+      correct,
+      wrong,
+      timeTaken,
+      startDate,
+      answerReview,
+    } = req.body;
+
+    // ========================================
+    // UPDATE EXISTING PENDING ATTEMPT
+    // ========================================
+
+    if (attemptId) {
+      const pendingResult = await Result.findOne({
+        _id: attemptId,
+        userId,
+        status: "pending",
+      });
+
+      if (!pendingResult) {
+        return res.status(404).json({
+          success: false,
+          message: "Pending quiz attempt not found",
+        });
+      }
+
+      pendingResult.playerName = playerName;
+      pendingResult.technology = technology;
+      pendingResult.level = level;
+      pendingResult.totalQuestions = totalQuestions;
+      pendingResult.correct = correct;
+      pendingResult.wrong = wrong;
+      pendingResult.timeTaken = timeTaken || 0;
+      pendingResult.startDate =
+        startDate || pendingResult.startDate;
+      pendingResult.answerReview =
+        answerReview || [];
+      pendingResult.status = "submitted";
+
+      await pendingResult.save();
+
+      return res.status(200).json({
+        success: true,
+        result: pendingResult,
+      });
+    }
+
+    // ========================================
+    // FALLBACK: CREATE NEW SUBMITTED RESULT
+    // ========================================
+
     const result = await Result.create({
       ...req.body,
       userId,
@@ -26,9 +132,8 @@ export const createMyResult = async (req, res) => {
       success: true,
       result,
     });
-
   } catch (err) {
-    console.log("CREATE RESULT ERROR:", err);
+    console.error("CREATE RESULT ERROR:", err);
 
     res.status(500).json({
       success: false,
@@ -36,7 +141,6 @@ export const createMyResult = async (req, res) => {
     });
   }
 };
-
 
 // ========================================
 // GET MY RESULTS
@@ -63,9 +167,8 @@ export const getMyResults = async (req, res) => {
       success: true,
       results,
     });
-
   } catch (err) {
-    console.log("GET RESULTS ERROR:", err);
+    console.error("GET RESULTS ERROR:", err);
 
     res.status(500).json({
       success: false,
@@ -74,7 +177,6 @@ export const getMyResults = async (req, res) => {
   }
 };
 
-
 // ========================================
 // GET LEADERBOARD
 // ========================================
@@ -82,13 +184,37 @@ export const getMyResults = async (req, res) => {
 export const getLeaderboard = async (req, res) => {
   try {
     const results = await Result.aggregate([
+      // ========================================
+      // ONLY SUBMITTED RESULTS
+      // OLD RESULTS WITHOUT STATUS ALSO ALLOWED
+      // ========================================
 
-      // Calculate percentage
+      {
+        $match: {
+          $or: [
+            {
+              status: "submitted",
+            },
+            {
+              status: {
+                $exists: false,
+              },
+            },
+          ],
+        },
+      },
+
+      // ========================================
+      // CALCULATE PERCENTAGE
+      // ========================================
+
       {
         $addFields: {
           percentage: {
             $cond: [
-              { $gt: ["$totalQuestions", 0] },
+              {
+                $gt: ["$totalQuestions", 0],
+              },
               {
                 $multiply: [
                   {
@@ -106,7 +232,10 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Highest score first
+      // ========================================
+      // HIGHEST SCORE FIRST
+      // ========================================
+
       {
         $sort: {
           percentage: -1,
@@ -115,7 +244,10 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Keep best result for each user + quiz
+      // ========================================
+      // BEST RESULT PER USER + QUIZ
+      // ========================================
+
       {
         $group: {
           _id: {
@@ -162,7 +294,10 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Get user details
+      // ========================================
+      // GET USER DETAILS
+      // ========================================
+
       {
         $lookup: {
           from: "users",
@@ -179,7 +314,10 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Get actual user name
+      // ========================================
+      // USER NAME
+      // ========================================
+
       {
         $addFields: {
           userName: {
@@ -196,7 +334,10 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Final sorting
+      // ========================================
+      // FINAL SORT
+      // ========================================
+
       {
         $sort: {
           technology: 1,
@@ -207,7 +348,10 @@ export const getLeaderboard = async (req, res) => {
         },
       },
 
-      // Return required fields
+      // ========================================
+      // FINAL FIELDS
+      // ========================================
+
       {
         $project: {
           _id: 0,
@@ -229,7 +373,6 @@ export const getLeaderboard = async (req, res) => {
       success: true,
       results,
     });
-
   } catch (err) {
     console.error("LEADERBOARD ERROR:", err);
 

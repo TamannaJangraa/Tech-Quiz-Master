@@ -9,9 +9,13 @@ import {
   deleteQuiz,
   uploadQuiz,
   getAllQuizzes,
+  updateQuiz,
 } from "../controllers/adminController.js";
 
-import { protect, isAdmin } from "../middleware/auth.js";
+import {
+  protect,
+  isAdmin,
+} from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -19,9 +23,19 @@ const router = express.Router();
 // ADMIN ROUTES
 // ========================================
 
-router.post("/upload-quiz", protect, isAdmin, uploadQuiz);
+router.post(
+  "/upload-quiz",
+  protect,
+  isAdmin,
+  uploadQuiz
+);
 
-router.get("/stats", protect, isAdmin, getStats);
+router.get(
+  "/stats",
+  protect,
+  isAdmin,
+  getStats
+);
 
 router.get(
   "/details",
@@ -30,14 +44,35 @@ router.get(
   getDashboardDetails
 );
 
-router.get("/quizzes", protect, isAdmin, getAllQuizzes);
+router.get(
+  "/quizzes",
+  protect,
+  isAdmin,
+  getAllQuizzes
+);
 
-router.delete("/quiz/:id", protect, isAdmin, deleteQuiz);
+router.put(
+  "/quiz/:id",
+  protect,
+  isAdmin,
+  updateQuiz
+);
+
+router.delete(
+  "/quiz/:id",
+  protect,
+  isAdmin,
+  deleteQuiz
+);
 
 // ========================================
 // PUBLIC / USER QUIZ ROUTE
 // ========================================
 
-router.get("/public-quizzes", protect, getAllQuizzes);
+router.get(
+  "/public-quizzes",
+  protect,
+  getAllQuizzes
+);
 
 export default router;
