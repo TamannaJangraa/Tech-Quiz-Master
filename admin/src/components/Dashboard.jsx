@@ -1,7 +1,7 @@
 // Dashboard.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useApi } from "../services/api/api.js";
-import Navbar from "./navbar.jsx";
+import Navbar from "./Navbar.jsx";
 
 import {
   Upload,
