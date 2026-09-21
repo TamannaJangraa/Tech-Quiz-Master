@@ -555,56 +555,64 @@ const Dashboard = () => {
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* =====================================================
-            WELCOME
+            DASHBOARD HEADER
         ====================================================== */}
         <section className="mb-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+
             <div>
-              <div className="mb-3 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
-                  <Sparkles size={21} />
-                </div>
-
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-                    Admin Dashboard
-                  </h1>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    Manage quizzes and monitor your platform.
-                  </p>
-                </div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-600">
+                <Sparkles size={14} />
+                Admin Workspace
               </div>
+
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                Admin Dashboard
+              </h1>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+                Manage quizzes, monitor student activity,
+                and keep your quiz platform organized.
+              </p>
             </div>
 
-            <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-2.5">
-              <Activity size={18} className="text-indigo-600" />
+            <div className="flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <Activity
+                size={18}
+                className="text-indigo-600"
+              />
 
-              <span className="text-sm font-semibold text-indigo-700">
-                Quiz Management
+              <span className="text-sm font-semibold text-slate-700">
+                Platform Overview
               </span>
             </div>
+
           </div>
         </section>
 
         {/* =====================================================
             STATISTICS
         ====================================================== */}
-        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
           {/* TOTAL USERS */}
           <div
-            onClick={() => openDetails("totalUsers", "All Users")}
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            onClick={() =>
+              openDetails("totalUsers", "All Users")
+            }
+            className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
+
               <div>
                 <p className="text-sm font-medium text-slate-500">
                   Total Users
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">
-                  {loadingStats ? "..." : adminStats.totalUsers}
+                <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {loadingStats
+                    ? "..."
+                    : adminStats.totalUsers}
                 </h3>
 
                 <p className="mt-2 text-xs text-slate-400">
@@ -612,158 +620,206 @@ const Dashboard = () => {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-indigo-50 p-3 text-indigo-600">
-                <Users size={24} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:scale-105">
+                <Users size={22} />
               </div>
+
             </div>
           </div>
 
-          {/* LOGGED IN USERS */}
+          {/* ACTIVE USERS */}
           <div
-            onClick={() => openDetails("activeUsers", "Logged In Users")}
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            onClick={() =>
+              openDetails(
+                "activeUsers",
+                "Logged In Users"
+              )
+            }
+            className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
+
               <div>
                 <p className="text-sm font-medium text-slate-500">
-                  Logged In Users
+                  Active Users
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">
-                  {loadingStats ? "..." : adminStats.activeUsers}
+                <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {loadingStats
+                    ? "..."
+                    : adminStats.activeUsers}
                 </h3>
 
-                <p className="mt-2 text-xs text-emerald-600">
+                <p className="mt-2 text-xs font-medium text-emerald-600">
                   Currently active
                 </p>
               </div>
 
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
-                <UserCheck size={24} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition group-hover:scale-105">
+                <UserCheck size={22} />
               </div>
+
             </div>
           </div>
 
-          {/* INACTIVE USERS */}
-          <div
-            onClick={() => openDetails("inactiveUsers", "Inactive Students")}
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Inactive Students
-                </p>
-
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">
-                  {loadingStats ? "..." : adminStats.inactiveUsers}
-                </h3>
-
-                <p className="mt-2 text-xs text-slate-400">
-                  Registered but not active
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-slate-100 p-3 text-slate-600">
-                <Users size={24} />
-              </div>
-            </div>
-          </div>
-
-          {/* TOTAL QUESTIONS */}
+          {/* QUESTIONS */}
           <div
             onClick={() =>
-              openDetails("totalQuestions", "Quiz Question Details")
+              openDetails(
+                "totalQuestions",
+                "Quiz Question Details"
+              )
             }
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
+
               <div>
                 <p className="text-sm font-medium text-slate-500">
                   Total Questions
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">
-                  {loadingStats ? "..." : adminStats.totalQuestions}
+                <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {loadingStats
+                    ? "..."
+                    : adminStats.totalQuestions}
                 </h3>
 
                 <p className="mt-2 text-xs text-slate-400">
-                  Across all platform quizzes
+                  Across all quizzes
                 </p>
               </div>
 
-              <div className="rounded-xl bg-violet-50 p-3 text-violet-600">
-                <FileQuestion size={24} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600 transition group-hover:scale-105">
+                <FileQuestion size={22} />
               </div>
+
             </div>
           </div>
 
-          {/* SUBMITTED QUIZZES */}
+          {/* SUBMITTED */}
           <div
             onClick={() =>
-              openDetails("submittedQuizzes", "Submitted Quizzes")
+              openDetails(
+                "submittedQuizzes",
+                "Submitted Quizzes"
+              )
             }
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
+
               <div>
                 <p className="text-sm font-medium text-slate-500">
                   Submitted Quizzes
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">
-                  {loadingStats ? "..." : adminStats.submittedQuizzes}
+                <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {loadingStats
+                    ? "..."
+                    : adminStats.submittedQuizzes}
                 </h3>
 
-                <p className="mt-2 text-xs text-emerald-600">
+                <p className="mt-2 text-xs font-medium text-emerald-600">
                   Successfully submitted
                 </p>
               </div>
 
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
-                <CheckCircle size={24} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition group-hover:scale-105">
+                <CheckCircle size={22} />
               </div>
+
             </div>
           </div>
 
-          {/* PENDING QUIZZES */}
+          {/* INACTIVE */}
           <div
-            onClick={() => openDetails("pendingQuizzes", "Pending Quizzes")}
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            onClick={() =>
+              openDetails(
+                "inactiveUsers",
+                "Inactive Students"
+              )
+            }
+            className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
+
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  Inactive Students
+                </p>
+
+                <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {loadingStats
+                    ? "..."
+                    : adminStats.inactiveUsers}
+                </h3>
+
+                <p className="mt-2 text-xs text-slate-400">
+                  Registered but inactive
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition group-hover:scale-105">
+                <Users size={22} />
+              </div>
+
+            </div>
+          </div>
+
+          {/* PENDING */}
+          <div
+            onClick={() =>
+              openDetails(
+                "pendingQuizzes",
+                "Pending Quizzes"
+              )
+            }
+            className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-amber-200 hover:shadow-md"
+          >
+            <div className="flex items-start justify-between">
+
               <div>
                 <p className="text-sm font-medium text-slate-500">
                   Pending Quizzes
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">
-                  {loadingStats ? "..." : adminStats.pendingQuizzes}
+                <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {loadingStats
+                    ? "..."
+                    : adminStats.pendingQuizzes}
                 </h3>
 
-                <p className="mt-2 text-xs text-amber-600">
+                <p className="mt-2 text-xs font-medium text-amber-600">
                   Attempted but not submitted
                 </p>
               </div>
 
-              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
-                <Clock size={24} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition group-hover:scale-105">
+                <Clock size={22} />
               </div>
+
             </div>
           </div>
 
           {/* USER ACTIVITY */}
           <div
-            onClick={() => openDetails("activeUsers", "User Activity")}
-            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            onClick={() =>
+              openDetails(
+                "activeUsers",
+                "User Activity"
+              )
+            }
+            className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
+
               <div>
                 <p className="text-sm font-medium text-slate-500">
                   User Activity
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">
+                <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
                   {loadingStats
                     ? "..."
                     : `${
@@ -778,15 +834,17 @@ const Dashboard = () => {
                 </h3>
 
                 <p className="mt-2 text-xs text-slate-400">
-                  Logged in percentage
+                  Logged-in user percentage
                 </p>
               </div>
 
-              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
-                <BarChart3 size={24} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:scale-105">
+                <BarChart3 size={22} />
               </div>
+
             </div>
           </div>
+
         </section>
 
         {/* =====================================================
@@ -796,286 +854,356 @@ const Dashboard = () => {
 
           {/* ===================================================
               CREATE QUIZ
-          ==================================================== */}
+          =================================================== */}
           <section className="xl:col-span-2">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-              <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-5 sm:px-6">
-                <div className="flex items-start gap-3">
+              {/* FORM HEADER */}
+              <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50 via-white to-violet-50 px-5 py-6 sm:px-7">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
-                  <div className="rounded-xl bg-indigo-600 p-2.5 text-white">
-                    <FileQuestion size={22} />
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-200">
+                      <FileQuestion size={23} />
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                        Quiz Builder
+                      </p>
+
+                      <h2 className="mt-1 text-xl font-extrabold text-slate-900 sm:text-2xl">
+                        Create New Quiz
+                      </h2>
+
+                      <p className="mt-1 max-w-xl text-sm leading-6 text-slate-500">
+                        Configure the quiz details and upload your questions in CSV format.
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900">
-                      Create New Quiz
-                    </h2>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      Configure your quiz and upload questions using a CSV
-                      file.
-                    </p>
+                  <div className="flex items-center gap-2 self-start rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
+                    <Zap size={14} className="text-indigo-500" />
+                    Ready to build
                   </div>
 
                 </div>
               </div>
 
-              <div className="space-y-7 p-5 sm:p-6">
+              <div className="space-y-8 p-5 sm:p-7">
 
-                {/* TECHNOLOGY */}
+                {/* STEP 1 */}
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">
-                    Technology
-                  </label>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                      1
+                    </span>
 
-                  <input
-                    type="text"
-                    value={technology}
-                    onChange={(e) => {
-                      setTechnology(e.target.value);
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">
+                        Basic Information
+                      </h3>
 
-                      setValidationErrors((prev) => ({
-                        ...prev,
-                        technology: "",
-                      }));
-                    }}
-                    placeholder="e.g. Java, Python, JavaScript"
-                    className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-4 ${
-                      validationErrors.technology
-                        ? "border-red-400 focus:ring-red-100"
-                        : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
-                    }`}
-                  />
-
-                  {validationErrors.technology && (
-                    <p className="mt-2 flex items-center gap-1 text-sm text-red-500">
-                      <AlertCircle size={16} />
-                      {validationErrors.technology}
-                    </p>
-                  )}
-                </div>
-
-                {/* DIFFICULTY */}
-                <div>
-                  <label className="mb-3 block text-sm font-semibold text-slate-700">
-                    Difficulty Level
-                  </label>
-
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    {levels.map((lvl) => {
-                      const selected = level === lvl.value;
-
-                      const styles = {
-                        Basic: selected
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                          : "border-slate-200 hover:border-emerald-300",
-
-                        Intermediate: selected
-                          ? "border-amber-500 bg-amber-50 text-amber-700"
-                          : "border-slate-200 hover:border-amber-300",
-
-                        Advanced: selected
-                          ? "border-rose-500 bg-rose-50 text-rose-700"
-                          : "border-slate-200 hover:border-rose-300",
-                      };
-
-                      return (
-                        <button
-                          key={lvl.value}
-                          type="button"
-                          onClick={() => {
-                            setLevel(lvl.value);
-
-                            setValidationErrors((prev) => ({
-                              ...prev,
-                              level: "",
-                            }));
-                          }}
-                          className={`rounded-xl border-2 px-4 py-4 text-sm font-semibold transition ${styles[lvl.value]}`}
-                        >
-                          {selected && (
-                            <CheckCircle2
-                              size={17}
-                              className="mx-auto mb-1"
-                            />
-                          )}
-
-                          {lvl.value}
-                        </button>
-                      );
-                    })}
+                      <p className="text-xs text-slate-400">
+                        Define the technology and difficulty.
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* TIME */}
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">
-                    Time Limit
-                  </label>
+                  <div className="grid gap-5 md:grid-cols-2">
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
-
-                    <div className="relative flex-1">
-                      <Clock
-                        size={19}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
+                    {/* TECHNOLOGY */}
+                    <div className="md:col-span-2">
+                      <label className="mb-2 block text-sm font-semibold text-slate-700">
+                        Technology
+                      </label>
 
                       <input
                         type="text"
-                        inputMode="numeric"
-                        value={timeLimit}
+                        value={technology}
                         onChange={(e) => {
-                          const value = e.target.value;
+                          setTechnology(e.target.value);
 
-                          if (value === "" || /^\d+$/.test(value)) {
-                            setTimeLimit(value);
-
-                            setValidationErrors((prev) => ({
-                              ...prev,
-                              timeLimit: "",
-                            }));
-                          }
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            technology: "",
+                          }));
                         }}
-                        onBlur={(e) => {
-                          if (e.target.value === "") {
-                            setTimeLimit(30);
-                          }
-                        }}
-                        className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm outline-none transition focus:ring-4 ${
-                          validationErrors.timeLimit
-                            ? "border-red-400 focus:ring-red-100"
+                        placeholder="e.g. Java, Python, JavaScript"
+                        className={`w-full rounded-xl border bg-slate-50 px-4 py-3.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 ${
+                          validationErrors.technology
+                            ? "border-red-400 focus:border-red-400 focus:ring-red-100"
                             : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
                         }`}
                       />
+
+                      {validationErrors.technology && (
+                        <p className="mt-2 flex items-center gap-1 text-sm text-red-500">
+                          <AlertCircle size={16} />
+                          {validationErrors.technology}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="flex items-center justify-center rounded-xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-600">
-                      {timeLimit || 0} minutes
+                    {/* DIFFICULTY */}
+                    <div>
+                      <label className="mb-3 block text-sm font-semibold text-slate-700">
+                        Difficulty Level
+                      </label>
+
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {levels.map((lvl) => {
+                          const selected = level === lvl.value;
+
+                          const styles = {
+                            Basic: selected
+                              ? "border-emerald-400 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-100"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/40",
+
+                            Intermediate: selected
+                              ? "border-amber-400 bg-amber-50 text-amber-700 ring-2 ring-amber-100"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-amber-300 hover:bg-amber-50/40",
+
+                            Advanced: selected
+                              ? "border-rose-400 bg-rose-50 text-rose-700 ring-2 ring-rose-100"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:bg-rose-50/40",
+                          };
+
+                          return (
+                            <button
+                              key={lvl.value}
+                              type="button"
+                              onClick={() => {
+                                setLevel(lvl.value);
+
+                                setValidationErrors((prev) => ({
+                                  ...prev,
+                                  level: "",
+                                }));
+                              }}
+                              className={`rounded-xl border-2 px-3 py-3.5 text-xs font-bold transition sm:text-sm ${styles[lvl.value]}`}
+                            >
+                              {selected && (
+                                <CheckCircle2
+                                  size={16}
+                                  className="mx-auto mb-1"
+                                />
+                              )}
+
+                              {lvl.value}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* TIME */}
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-700">
+                        Time Limit
+                      </label>
+
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <Clock
+                            size={18}
+                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                          />
+
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={timeLimit}
+                            onChange={(e) => {
+                              const value = e.target.value;
+
+                              if (
+                                value === "" ||
+                                /^\d+$/.test(value)
+                              ) {
+                                setTimeLimit(value);
+
+                                setValidationErrors((prev) => ({
+                                  ...prev,
+                                  timeLimit: "",
+                                }));
+                              }
+                            }}
+                            onBlur={(e) => {
+                              if (e.target.value === "") {
+                                setTimeLimit(30);
+                              }
+                            }}
+                            className={`w-full rounded-xl border bg-slate-50 py-3.5 pl-11 pr-4 text-sm font-medium text-slate-800 outline-none transition focus:bg-white focus:ring-4 ${
+                              validationErrors.timeLimit
+                                ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                            }`}
+                          />
+                        </div>
+
+                        <div className="shrink-0 rounded-xl bg-slate-100 px-3.5 py-3.5 text-xs font-semibold text-slate-500 sm:px-4 sm:text-sm">
+                          min
+                        </div>
+                      </div>
+
+                      {validationErrors.timeLimit && (
+                        <p className="mt-2 flex items-center gap-1 text-sm text-red-500">
+                          <AlertCircle size={16} />
+                          {validationErrors.timeLimit}
+                        </p>
+                      )}
                     </div>
 
                   </div>
                 </div>
 
-                {/* CSV UPLOAD */}
+                {/* STEP 2 */}
                 <div>
-                  <label className="mb-3 block text-sm font-semibold text-slate-700">
-                    Upload Questions CSV
-                  </label>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                      2
+                    </span>
 
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition sm:p-8 ${
-                      isDragging
-                        ? "border-indigo-500 bg-indigo-50"
-                        : validationErrors.questions
-                        ? "border-red-400 bg-red-50"
-                        : "border-slate-300 bg-slate-50 hover:border-indigo-400 hover:bg-indigo-50/40"
-                    }`}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">
+                        Add Questions
+                      </h3>
 
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
-                      <UploadCloud size={28} />
+                      <p className="text-xs text-slate-400">
+                        Upload a CSV containing your quiz questions.
+                      </p>
                     </div>
-
-                    <h3 className="font-semibold text-slate-700">
-                      {isDragging
-                        ? "Drop your CSV file here"
-                        : "Drag & drop your CSV file"}
-                    </h3>
-
-                    <p className="mt-2 text-sm text-slate-500">
-                      or click here to browse your computer
-                    </p>
                   </div>
 
-                  {csvFileName && (
-                    <div className="mt-3 flex flex-col gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  {/* CSV UPLOAD */}
+                  <div>
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`group cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition-all sm:p-8 ${
+                        isDragging
+                          ? "border-indigo-500 bg-indigo-50 shadow-inner"
+                          : validationErrors.questions
+                          ? "border-red-400 bg-red-50"
+                          : "border-slate-300 bg-slate-50 hover:border-indigo-400 hover:bg-indigo-50/40"
+                      }`}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
 
-                      <div className="flex min-w-0 items-center gap-2">
-                        <CheckCircle
-                          size={19}
-                          className="shrink-0 text-emerald-600"
-                        />
-
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-emerald-700">
-                            {questions.length} questions loaded
-                          </p>
-
-                          <p className="truncate text-xs text-emerald-600">
-                            {csvFileName}
-                          </p>
-                        </div>
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 transition-transform group-hover:scale-105">
+                        <UploadCloud size={28} />
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowPreview(!showPreview);
-                        }}
-                        className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 sm:w-auto"
-                      >
-                        {showPreview ? "Hide Preview" : "Preview"}
-                      </button>
+                      <h3 className="mt-4 font-bold text-slate-700">
+                        {isDragging
+                          ? "Drop your CSV file here"
+                          : "Upload your questions CSV"}
+                      </h3>
 
+                      <p className="mt-1.5 text-sm text-slate-500">
+                        Drag & drop or click to browse
+                      </p>
+
+                      <p className="mt-3 text-xs text-slate-400">
+                        Supported format: .csv
+                      </p>
                     </div>
-                  )}
 
-                  {csvError && (
-                    <p className="mt-2 flex items-center gap-1 text-sm text-red-500">
-                      <AlertCircle size={16} />
-                      {csvError}
-                    </p>
-                  )}
+                    {csvFileName && (
+                      <div className="mt-3 flex flex-col gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-600 shadow-sm">
+                            <CheckCircle size={19} />
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-emerald-700">
+                              {questions.length} questions loaded
+                            </p>
+
+                            <p className="truncate text-xs text-emerald-600">
+                              {csvFileName}
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowPreview(!showPreview);
+                          }}
+                          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-emerald-100 bg-white px-3 py-2 text-xs font-bold text-indigo-600 shadow-sm transition hover:bg-indigo-50 sm:w-auto"
+                        >
+                          <Eye size={15} />
+                          {showPreview ? "Hide Preview" : "Preview"}
+                        </button>
+                      </div>
+                    )}
+
+                    {csvError && (
+                      <p className="mt-2 flex items-center gap-1 text-sm text-red-500">
+                        <AlertCircle size={16} />
+                        {csvError}
+                      </p>
+                    )}
+
+                    {validationErrors.questions && !csvError && (
+                      <p className="mt-2 flex items-center gap-1 text-sm text-red-500">
+                        <AlertCircle size={16} />
+                        {validationErrors.questions}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* PREVIEW */}
                 {showPreview && questions.length > 0 && (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
 
-                    <div className="mb-4 flex items-center justify-between gap-3">
-
+                    <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
                       <div>
                         <h3 className="font-bold text-slate-800">
                           Question Preview
                         </h3>
 
-                        <p className="text-sm text-slate-500">
+                        <p className="mt-0.5 text-xs text-slate-500">
                           Showing the first 3 uploaded questions
                         </p>
                       </div>
 
-                      <Eye
-                        size={20}
-                        className="shrink-0 text-indigo-600"
-                      />
-
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                        <Eye size={18} />
+                      </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 p-4 sm:p-5">
                       {questions.slice(0, 3).map((question, index) => (
                         <div
                           key={index}
                           className="rounded-xl border border-slate-200 bg-white p-4"
                         >
-                          <p className="font-semibold text-slate-800">
-                            {index + 1}. {question.question}
-                          </p>
+                          <div className="flex gap-3">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-xs font-bold text-indigo-600">
+                              {index + 1}
+                            </span>
 
-                          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                            <p className="font-semibold leading-6 text-slate-800">
+                              {question.question}
+                            </p>
+                          </div>
+
+                          <div className="mt-4 grid gap-2 sm:grid-cols-2">
                             {question.options.map(
                               (option, optionIndex) => {
                                 const letter =
@@ -1087,17 +1215,26 @@ const Dashboard = () => {
                                 return (
                                   <div
                                     key={optionIndex}
-                                    className={`rounded-lg border px-3 py-2 text-sm ${
+                                    className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm ${
                                       correct
-                                        ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                                         : "border-slate-200 text-slate-600"
                                     }`}
                                   >
-                                    <span className="mr-2 font-bold">
+                                    <span className="font-bold">
                                       {letter}.
                                     </span>
 
-                                    {option}
+                                    <span className="flex-1">
+                                      {option}
+                                    </span>
+
+                                    {correct && (
+                                      <CheckCircle2
+                                        size={16}
+                                        className="shrink-0 text-emerald-500"
+                                      />
+                                    )}
                                   </div>
                                 );
                               }
@@ -1109,42 +1246,62 @@ const Dashboard = () => {
                   </div>
                 )}
 
-                {/* ACTIONS */}
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+                {/* STEP 3 */}
+                <div>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                      3
+                    </span>
 
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    disabled={submitting}
-                    className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed"
-                  >
-                    Reset
-                  </button>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">
+                        Publish Quiz
+                      </h3>
 
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={!isFormValid}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition ${
-                      isFormValid
-                        ? "bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-xl"
-                        : "cursor-not-allowed bg-slate-300"
-                    }`}
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        <Zap size={18} />
-                        Create Quiz
-                      </>
-                    )}
-                  </button>
+                      <p className="text-xs text-slate-400">
+                        Review the details and create the quiz.
+                      </p>
+                    </div>
+                  </div>
 
+                  <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      disabled={submitting}
+                      className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Reset
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={!isFormValid}
+                      className={`flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all ${
+                        isFormValid
+                          ? "bg-indigo-600 shadow-md shadow-indigo-200 hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
+                          : "cursor-not-allowed bg-slate-300"
+                      }`}
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2
+                            size={18}
+                            className="animate-spin"
+                          />
+                          Creating Quiz...
+                        </>
+                      ) : (
+                        <>
+                          <Zap size={18} />
+                          Create Quiz
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
+
               </div>
             </div>
           </section>
@@ -1155,80 +1312,126 @@ const Dashboard = () => {
           <aside className="space-y-6">
 
             {/* QUIZ SUMMARY */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-              <div className="mb-5 flex items-center gap-3">
-                <div className="rounded-xl bg-violet-50 p-2.5 text-violet-600">
-                  <Activity size={21} />
-                </div>
+              <div className="border-b border-slate-100 bg-slate-50 px-5 py-5 sm:px-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                    <Activity size={20} />
+                  </div>
 
-                <div>
-                  <h3 className="font-bold text-slate-800">
-                    Quiz Summary
-                  </h3>
+                  <div>
+                    <h3 className="font-bold text-slate-900">
+                      Quiz Summary
+                    </h3>
+
+                    <p className="text-xs text-slate-400">
+                      Current configuration
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 p-5 sm:p-6">
 
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
-                  <span className="text-sm text-slate-500">
+                <div className="rounded-xl bg-indigo-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-indigo-500">
                     Technology
-                  </span>
+                  </p>
 
-                  <span className="truncate text-sm font-semibold text-slate-800">
+                  <p className="mt-1 truncate text-lg font-bold text-slate-900">
                     {technology || "Not selected"}
-                  </span>
+                  </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
-                  <span className="text-sm text-slate-500">
-                    Difficulty
-                  </span>
+                <div className="grid grid-cols-2 gap-3">
 
-                  <span className="text-sm font-semibold text-slate-800">
-                    {level}
-                  </span>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <p className="text-xs font-medium text-slate-400">
+                      Difficulty
+                    </p>
+
+                    <p className="mt-1 text-sm font-bold text-slate-800">
+                      {level}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <p className="text-xs font-medium text-slate-400">
+                      Time
+                    </p>
+
+                    <p className="mt-1 text-sm font-bold text-slate-800">
+                      {timeLimit || 0} min
+                    </p>
+                  </div>
+
                 </div>
 
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
-                  <span className="text-sm text-slate-500">
-                    Time Limit
-                  </span>
+                <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4">
+                  <div className="flex items-center gap-2">
+                    <FileQuestion
+                      size={18}
+                      className="text-violet-600"
+                    />
 
-                  <span className="text-sm font-semibold text-slate-800">
-                    {timeLimit || 0} min
-                  </span>
-                </div>
+                    <span className="text-sm font-medium text-slate-600">
+                      Questions
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm text-slate-500">
-                    Questions
-                  </span>
-
-                  <span className="text-sm font-semibold text-indigo-600">
+                  <span className="text-xl font-extrabold text-indigo-600">
                     {questions.length}
                   </span>
+                </div>
+
+                <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-500">
+                  <CheckCircle2
+                    size={16}
+                    className="shrink-0 text-emerald-500"
+                  />
+
+                  Quiz will be created only when all required fields are valid.
                 </div>
 
               </div>
             </div>
 
             {/* CSV GUIDE */}
-            <div className="rounded-2xl bg-slate-900 p-5 text-white shadow-sm sm:p-6">
+            <div className="rounded-3xl bg-slate-900 p-6 text-white shadow-sm">
 
               <div className="flex items-center gap-3">
-                <Upload size={21} className="text-indigo-300" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-indigo-300">
+                  <Upload size={20} />
+                </div>
 
-                <h3 className="font-bold">
-                  CSV Upload Guide
-                </h3>
+                <div>
+                  <h3 className="font-bold">
+                    CSV Upload Guide
+                  </h3>
+
+                  <p className="text-xs text-slate-400">
+                    Keep your file simple
+                  </p>
+                </div>
               </div>
 
               <p className="mt-4 text-sm leading-6 text-slate-300">
-                Your CSV should contain a question, four options, and the
-                correct answer.
+                Add the question, four answer options,
+                and the correct answer in your CSV file.
               </p>
+
+              <div className="mt-5 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                <p className="text-xs font-semibold text-slate-400">
+                  Expected structure
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-200">
+                  Question, Option A, Option B, Option C,
+                  Option D, Answer
+                </p>
+              </div>
+
             </div>
 
           </aside>

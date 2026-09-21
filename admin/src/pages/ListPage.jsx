@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/navbar.jsx";
 
 import {
@@ -17,6 +17,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Save,
+  Sparkles,
+  Layers3,
+  ArrowRight,
+  BookOpen,
+  ChevronDown,
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
@@ -34,18 +39,24 @@ const difficultyConfig = {
     badge:
       "bg-emerald-50 text-emerald-700 border-emerald-200",
     dot: "bg-emerald-500",
+    iconBg: "bg-emerald-50",
+    iconText: "text-emerald-600",
   },
   medium: {
     label: "Medium",
     badge:
       "bg-amber-50 text-amber-700 border-amber-200",
     dot: "bg-amber-500",
+    iconBg: "bg-amber-50",
+    iconText: "text-amber-600",
   },
   hard: {
     label: "Hard",
     badge:
       "bg-rose-50 text-rose-700 border-rose-200",
     dot: "bg-rose-500",
+    iconBg: "bg-rose-50",
+    iconText: "text-rose-600",
   },
 };
 
@@ -63,6 +74,40 @@ const formatDate = (date) => {
     month: "short",
     day: "numeric",
   });
+};
+
+const getAnswerKeyFromQuestion = (question) => {
+  const answer = (
+    question.answer ||
+    question.correctAnswer ||
+    ""
+  )
+    .toString()
+    .trim();
+
+  const options = Array.isArray(question.options)
+    ? question.options
+    : [];
+
+  if (
+    ["A", "B", "C", "D"].includes(
+      answer.toUpperCase()
+    )
+  ) {
+    return answer.toUpperCase();
+  }
+
+  const index = options.findIndex(
+    (option) =>
+      option?.toString().trim().toLowerCase() ===
+      answer.toLowerCase()
+  );
+
+  if (index >= 0) {
+    return ["A", "B", "C", "D"][index];
+  }
+
+  return "";
 };
 
 const ListPage = () => {
@@ -101,16 +146,28 @@ const ListPage = () => {
         }))
       );
     } catch (err) {
-      setError(err.message || "Failed to load quizzes");
+      setError(
+        err.message || "Failed to load quizzes"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    document.title = "Manage Quizzes | Tech Quiz Admin";
+    document.title =
+      "Manage Quizzes | Tech Quiz Admin";
     loadQuizzes();
   }, []);
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+
+    window.clearTimeout(showToast.timer);
+    showToast.timer = window.setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  };
 
   // DELETE QUIZ
   const handleDelete = async (id, name) => {
@@ -121,41 +178,45 @@ const ListPage = () => {
     if (!confirmed) return;
 
     try {
-      await request(`/admin/quiz/${id}`, "DELETE");
+      await request(
+        `/admin/quiz/${id}`,
+        "DELETE"
+      );
 
       setQuizzes((previous) =>
         previous.filter(
-          (quiz) => (quiz._id || quiz.id) !== id
+          (quiz) =>
+            (quiz._id || quiz.id) !== id
         )
       );
 
-      setToast({
-        type: "success",
-        message: `"${name}" deleted successfully`,
-      });
+      showToast(
+        "success",
+        `"${name}" deleted successfully`
+      );
     } catch (err) {
-      setToast({
-        type: "error",
-        message:
-          err.message || "Failed to delete quiz",
-      });
+      showToast(
+        "error",
+        err.message || "Failed to delete quiz"
+      );
     }
-
-    setTimeout(() => {
-      setToast(null);
-    }, 3500);
   };
 
   // OPEN EDIT MODAL
   const handleEdit = (quiz) => {
-    const questions = Array.isArray(quiz.questions)
+    const questions = Array.isArray(
+      quiz.questions
+    )
       ? quiz.questions
       : [];
 
     const formattedQuestions = questions.map(
       (question) => ({
-        question: question.question || "",
-        options: Array.isArray(question.options)
+        question:
+          question.question || "",
+        options: Array.isArray(
+          question.options
+        )
           ? [
               question.options[0] || "",
               question.options[1] || "",
@@ -165,11 +226,12 @@ const ListPage = () => {
           : ["", "", "", ""],
         answerKey:
           question.answerKey ||
-          getAnswerKeyFromQuestion(question) ||
+          getAnswerKeyFromQuestion(
+            question
+          ) ||
           "A",
         answerText:
-          question.answerText ||
-          "",
+          question.answerText || "",
       })
     );
 
@@ -181,44 +243,17 @@ const ListPage = () => {
         quiz.title ||
         quiz.name ||
         "",
-      level: quiz.level || "Basic",
+      level:
+        quiz.level ||
+        quiz.difficulty ||
+        "Basic",
       timeLimit:
         quiz.timeLimit ||
         quiz.time ||
         30,
-      questions: formattedQuestions,
+      questions:
+        formattedQuestions,
     });
-  };
-
-  // HELPER FOR OLD QUESTION DATA
-  const getAnswerKeyFromQuestion = (question) => {
-    const answer = (
-      question.answer ||
-      question.correctAnswer ||
-      ""
-    )
-      .toString()
-      .trim();
-
-    const options = Array.isArray(question.options)
-      ? question.options
-      : [];
-
-    if (["A", "B", "C", "D"].includes(answer.toUpperCase())) {
-      return answer.toUpperCase();
-    }
-
-    const index = options.findIndex(
-      (option) =>
-        option?.toString().trim().toLowerCase() ===
-        answer.toLowerCase()
-    );
-
-    if (index >= 0) {
-      return ["A", "B", "C", "D"][index];
-    }
-
-    return "";
   };
 
   // CLOSE EDIT MODAL
@@ -230,7 +265,10 @@ const ListPage = () => {
   };
 
   // UPDATE EDIT FORM
-  const updateEditField = (field, value) => {
+  const updateEditField = (
+    field,
+    value
+  ) => {
     setEditForm((previous) => ({
       ...previous,
       [field]: value,
@@ -248,7 +286,9 @@ const ListPage = () => {
       ];
 
       updatedQuestions[questionIndex] = {
-        ...updatedQuestions[questionIndex],
+        ...updatedQuestions[
+          questionIndex
+        ],
         question: value,
       };
 
@@ -277,17 +317,22 @@ const ListPage = () => {
         ...(currentQuestion.options || []),
       ];
 
-      updatedOptions[optionIndex] = value;
+      updatedOptions[optionIndex] =
+        value;
 
-      const optionKey = ["A", "B", "C", "D"][
-        optionIndex
-      ];
+      const optionKey = [
+        "A",
+        "B",
+        "C",
+        "D",
+      ][optionIndex];
 
       updatedQuestions[questionIndex] = {
         ...currentQuestion,
         options: updatedOptions,
         answerText:
-          currentQuestion.answerKey === optionKey
+          currentQuestion.answerKey ===
+          optionKey
             ? value
             : currentQuestion.answerText,
       };
@@ -323,8 +368,9 @@ const ListPage = () => {
         ...currentQuestion,
         answerKey,
         answerText:
-          currentQuestion.options?.[optionIndex] ||
-          "",
+          currentQuestion.options?.[
+            optionIndex
+          ] || "",
       };
 
       return {
@@ -339,22 +385,18 @@ const ListPage = () => {
     if (!editingQuiz || !editForm) return;
 
     if (!editForm.technology.trim()) {
-      setToast({
-        type: "error",
-        message: "Technology name is required",
-      });
-
-      setTimeout(() => setToast(null), 3500);
+      showToast(
+        "error",
+        "Technology name is required"
+      );
       return;
     }
 
     if (!editForm.level) {
-      setToast({
-        type: "error",
-        message: "Please select quiz level",
-      });
-
-      setTimeout(() => setToast(null), 3500);
+      showToast(
+        "error",
+        "Please select quiz level"
+      );
       return;
     }
 
@@ -362,12 +404,10 @@ const ListPage = () => {
       !editForm.timeLimit ||
       Number(editForm.timeLimit) < 1
     ) {
-      setToast({
-        type: "error",
-        message: "Time limit must be at least 1 minute",
-      });
-
-      setTimeout(() => setToast(null), 3500);
+      showToast(
+        "error",
+        "Time limit must be at least 1 minute"
+      );
       return;
     }
 
@@ -380,12 +420,10 @@ const ListPage = () => {
         editForm.questions[i];
 
       if (!question.question.trim()) {
-        setToast({
-          type: "error",
-          message: `Question ${i + 1} cannot be empty`,
-        });
-
-        setTimeout(() => setToast(null), 3500);
+        showToast(
+          "error",
+          `Question ${i + 1} cannot be empty`
+        );
         return;
       }
 
@@ -396,14 +434,12 @@ const ListPage = () => {
           (option) => !option.trim()
         )
       ) {
-        setToast({
-          type: "error",
-          message: `All 4 options are required for Question ${
+        showToast(
+          "error",
+          `All 4 options are required for Question ${
             i + 1
-          }`,
-        });
-
-        setTimeout(() => setToast(null), 3500);
+          }`
+        );
         return;
       }
 
@@ -412,14 +448,12 @@ const ListPage = () => {
           question.answerKey
         )
       ) {
-        setToast({
-          type: "error",
-          message: `Please select the correct answer for Question ${
+        showToast(
+          "error",
+          `Please select the correct answer for Question ${
             i + 1
-          }`,
-        });
-
-        setTimeout(() => setToast(null), 3500);
+          }`
+        );
         return;
       }
     }
@@ -435,15 +469,19 @@ const ListPage = () => {
               "B",
               "C",
               "D",
-            ].indexOf(question.answerKey);
+            ].indexOf(
+              question.answerKey
+            );
 
             return {
               question:
                 question.question.trim(),
 
-              options: question.options.map(
-                (option) => option.trim()
-              ),
+              options:
+                question.options.map(
+                  (option) =>
+                    option.trim()
+                ),
 
               answerKey:
                 question.answerKey,
@@ -500,70 +538,70 @@ const ListPage = () => {
         )
       );
 
-      setToast({
-        type: "success",
-        message: `"${payload.technology}" updated successfully`,
-      });
+      showToast(
+        "success",
+        `"${payload.technology}" updated successfully`
+      );
 
       closeEditModal();
     } catch (err) {
-      setToast({
-        type: "error",
-        message:
-          err.message ||
-          "Failed to update quiz",
-      });
+      showToast(
+        "error",
+        err.message ||
+          "Failed to update quiz"
+      );
     } finally {
       setSavingEdit(false);
-
-      setTimeout(() => {
-        setToast(null);
-      }, 3500);
     }
   };
 
-  const filteredQuizzes = quizzes.filter(
-    (quiz) => {
-      const searchValue = search
-        .trim()
-        .toLowerCase();
+  // FILTERING
+  const filteredQuizzes = useMemo(
+    () =>
+      quizzes.filter((quiz) => {
+        const searchValue = search
+          .trim()
+          .toLowerCase();
 
-      const searchableText = [
-        quiz.title,
-        quiz.name,
-        quiz.technology,
-        quiz.description,
-        quiz.topic,
-        quiz.category,
-        quiz.subject,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+        const searchableText = [
+          quiz.title,
+          quiz.name,
+          quiz.technology,
+          quiz.description,
+          quiz.topic,
+          quiz.category,
+          quiz.subject,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-      const matchesSearch =
-        !searchValue ||
-        searchableText.includes(searchValue);
+        const matchesSearch =
+          !searchValue ||
+          searchableText.includes(
+            searchValue
+          );
 
-      const rawLevel = (
-        quiz.difficulty ||
-        quiz.level ||
-        ""
-      ).toLowerCase();
+        const rawLevel = (
+          quiz.difficulty ||
+          quiz.level ||
+          ""
+        ).toLowerCase();
 
-      const normalizedLevel =
-        levelToKey[rawLevel] ||
-        rawLevel;
+        const normalizedLevel =
+          levelToKey[rawLevel] ||
+          rawLevel;
 
-      const matchesLevel =
-        filterLevel === "all" ||
-        normalizedLevel === filterLevel;
+        const matchesLevel =
+          filterLevel === "all" ||
+          normalizedLevel === filterLevel;
 
-      return (
-        matchesSearch &&
-        matchesLevel
-      );
-    }
+        return (
+          matchesSearch &&
+          matchesLevel
+        );
+      }),
+    [quizzes, search, filterLevel]
   );
 
   const clearFilters = () => {
@@ -571,28 +609,60 @@ const ListPage = () => {
     setFilterLevel("all");
   };
 
+  const currentFilterLabel =
+    filterLevel === "all"
+      ? "All Levels"
+      : filterLevel === "easy"
+      ? "Easy"
+      : filterLevel === "medium"
+      ? "Medium"
+      : "Hard";
+
+  const totalQuestions = quizzes.reduce(
+    (sum, quiz) =>
+      sum +
+      (quiz.questions?.length ??
+        quiz.totalQuestions ??
+        quiz.questionCount ??
+        0),
+    0
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50">
       <Navbar />
 
-      {/* PAGE HEADER */}
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-7 sm:py-9">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      {/* =====================================================
+          PAGE HEADER
+      ===================================================== */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
-            <div className="flex items-start sm:items-center gap-4">
-              <div className="w-14 h-14 shrink-0 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-sm">
-                <LayoutList className="w-7 h-7 text-white" />
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-600">
+                <Sparkles size={14} />
+                Quiz Workspace
               </div>
 
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-                  Quiz Management
-                </h1>
+              <div className="flex items-start gap-4">
 
-                <p className="text-sm sm:text-base text-slate-500 mt-1">
-                  View, search and manage all quizzes from one place.
-                </p>
+                <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200 sm:flex">
+                  <LayoutList size={27} />
+                </div>
+
+                <div>
+                  <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                    Quiz Management
+                  </h1>
+
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+                    Search, edit, and manage every quiz
+                    from one organized workspace.
+                  </p>
+                </div>
+
               </div>
             </div>
 
@@ -600,133 +670,217 @@ const ListPage = () => {
               onClick={() =>
                 navigate("/dashboard")
               }
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+              className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white shadow-md shadow-indigo-100 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg sm:w-fit"
             >
-              <Plus className="w-5 h-5" />
+              <Plus size={19} />
               Create New Quiz
+              <ArrowRight
+                size={17}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </button>
+
           </div>
         </div>
       </section>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
 
-        {/* SUMMARY */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        {/* =====================================================
+            SUMMARY
+        ====================================================== */}
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-5">
-            <p className="text-sm font-medium text-slate-500">
-              Total Quizzes
-            </p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  Total Quizzes
+                </p>
 
-            <p className="text-3xl font-bold text-slate-900 mt-2">
-              {quizzes.length}
-            </p>
+                <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {quizzes.length}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-400">
+                  Created on the platform
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <BookOpen size={21} />
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-5">
-            <p className="text-sm font-medium text-slate-500">
-              Showing Results
-            </p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  Showing Results
+                </p>
 
-            <p className="text-3xl font-bold text-indigo-600 mt-2">
-              {filteredQuizzes.length}
-            </p>
+                <p className="mt-2 text-3xl font-extrabold text-indigo-600">
+                  {filteredQuizzes.length}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-400">
+                  Matching current search/filter
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <Layers3 size={21} />
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-5">
-            <p className="text-sm font-medium text-slate-500">
-              Current Filter
-            </p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md sm:col-span-2 lg:col-span-1">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  Questions
+                </p>
 
-            <p className="text-lg font-bold text-slate-900 mt-3 capitalize">
-              {filterLevel === "all"
-                ? "All Levels"
-                : filterLevel}
-            </p>
+                <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                  {totalQuestions}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-400">
+                  Across all available quizzes
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <FileQuestion size={21} />
+              </div>
+            </div>
           </div>
 
-        </div>
+        </section>
 
-        {/* SEARCH AND FILTER */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
+        {/* =====================================================
+            SEARCH + FILTER
+        ====================================================== */}
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+
+          <div className="mb-4 flex items-center gap-2">
+            <Search
+              size={18}
+              className="text-indigo-600"
+            />
+
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">
+                Find a Quiz
+              </h2>
+
+              <p className="text-xs text-slate-400">
+                Search by technology, title or topic
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 lg:flex-row">
 
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+
+              <Search
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={19}
+              />
 
               <input
                 type="text"
                 value={search}
                 onChange={(e) =>
-                  setSearch(e.target.value)
+                  setSearch(
+                    e.target.value
+                  )
                 }
-                placeholder="Search quizzes by technology, title or topic..."
-                className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-300 text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                placeholder="Search quizzes..."
+                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
               />
             </div>
 
-            <div className="flex gap-3">
-              <div className="relative flex-1 md:w-52">
-                <SlidersHorizontal className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <div className="relative lg:w-56">
 
-                <select
-                  value={filterLevel}
-                  onChange={(e) =>
-                    setFilterLevel(e.target.value)
-                  }
-                  className="w-full h-12 pl-10 pr-4 rounded-xl border border-slate-300 bg-white text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 appearance-none"
-                >
-                  <option value="all">
-                    All Levels
-                  </option>
+              <SlidersHorizontal
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={17}
+              />
 
-                  <option value="easy">
-                    Easy
-                  </option>
+              <select
+                value={filterLevel}
+                onChange={(e) =>
+                  setFilterLevel(
+                    e.target.value
+                  )
+                }
+                className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-10 text-sm font-semibold text-slate-700 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+              >
+                <option value="all">
+                  All Levels
+                </option>
 
-                  <option value="medium">
-                    Medium
-                  </option>
+                <option value="easy">
+                  Easy
+                </option>
 
-                  <option value="hard">
-                    Hard
-                  </option>
-                </select>
-              </div>
+                <option value="medium">
+                  Medium
+                </option>
 
-              {(search ||
-                filterLevel !== "all") && (
-                <button
-                  onClick={clearFilters}
-                  className="h-12 px-4 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 transition"
-                  title="Clear filters"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
+                <option value="hard">
+                  Hard
+                </option>
+              </select>
+
+              <ChevronDown
+                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={17}
+              />
             </div>
 
-          </div>
-        </div>
+            {(search ||
+              filterLevel !== "all") && (
+              <button
+                onClick={clearFilters}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                <X size={17} />
+                Clear
+              </button>
+            )}
 
-        {/* TOAST */}
+          </div>
+        </section>
+
+        {/* =====================================================
+            TOAST
+        ====================================================== */}
         {toast && (
-          <div className="fixed top-24 right-4 sm:right-6 z-[70] max-w-sm w-[calc(100%-2rem)]">
+          <div className="fixed right-4 top-24 z-[70] w-[calc(100%-2rem)] max-w-sm">
             <div
-              className={`flex items-center gap-3 p-4 rounded-xl shadow-lg border ${
+              className={`flex items-start gap-3 rounded-2xl border p-4 shadow-xl ${
                 toast.type === "success"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                  : "bg-red-50 border-red-200 text-red-700"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-red-200 bg-red-50 text-red-700"
               }`}
             >
               {toast.type === "success" ? (
-                <CheckCircle2 className="w-5 h-5 shrink-0" />
+                <CheckCircle2
+                  className="mt-0.5 shrink-0"
+                  size={19}
+                />
               ) : (
-                <AlertCircle className="w-5 h-5 shrink-0" />
+                <AlertCircle
+                  className="mt-0.5 shrink-0"
+                  size={19}
+                />
               )}
 
-              <p className="text-sm font-medium flex-1">
+              <p className="flex-1 text-sm font-semibold leading-5">
                 {toast.message}
               </p>
 
@@ -734,103 +888,120 @@ const ListPage = () => {
                 onClick={() =>
                   setToast(null)
                 }
+                className="rounded-lg p-1 transition hover:bg-black/5"
               >
-                <X className="w-5 h-5" />
+                <X size={17} />
               </button>
             </div>
           </div>
         )}
 
-        {/* LOADING */}
+        {/* =====================================================
+            LOADING
+        ====================================================== */}
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
             {[1, 2, 3, 4, 5, 6].map(
               (item) => (
                 <div
                   key={item}
-                  className="bg-white border border-slate-200 rounded-2xl overflow-hidden animate-pulse"
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm animate-pulse"
                 >
-                  <div className="h-28 bg-slate-200" />
+                  <div className="h-32 bg-slate-200" />
 
-                  <div className="p-6 space-y-4">
-                    <div className="h-5 bg-slate-200 rounded w-3/4" />
-
-                    <div className="h-4 bg-slate-100 rounded w-1/2" />
+                  <div className="space-y-4 p-6">
+                    <div className="h-5 w-3/4 rounded bg-slate-200" />
+                    <div className="h-4 w-1/2 rounded bg-slate-100" />
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="h-16 bg-slate-100 rounded-xl" />
-                      <div className="h-16 bg-slate-100 rounded-xl" />
+                      <div className="h-20 rounded-xl bg-slate-100" />
+                      <div className="h-20 rounded-xl bg-slate-100" />
                     </div>
+
+                    <div className="h-10 rounded-xl bg-slate-100" />
                   </div>
                 </div>
               )
             )}
+
           </div>
         )}
 
-        {/* ERROR */}
+        {/* =====================================================
+            ERROR
+        ====================================================== */}
         {!loading && error && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-10 sm:p-14 text-center">
-            <div className="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-5">
-              <AlertCircle className="w-8 h-8 text-red-500" />
+          <div className="mt-8 rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
+
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+              <AlertCircle size={30} />
             </div>
 
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="mt-5 text-xl font-bold text-slate-900">
               Could not load quizzes
             </h2>
 
-            <p className="text-slate-500 mt-2 max-w-md mx-auto">
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
               {error}
             </p>
 
             <button
               onClick={loadQuizzes}
-              className="inline-flex items-center gap-2 mt-6 px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-700"
             >
-              <RefreshCw className="w-5 h-5" />
+              <RefreshCw size={17} />
               Try Again
             </button>
+
           </div>
         )}
 
-        {/* EMPTY STATE */}
+        {/* =====================================================
+            EMPTY STATE
+        ====================================================== */}
         {!loading &&
           !error &&
           filteredQuizzes.length === 0 && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 sm:p-16 text-center">
+            <div className="mt-8 rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
 
-              <div className="w-20 h-20 mx-auto rounded-full bg-indigo-50 flex items-center justify-center mb-6">
-                <Inbox className="w-10 h-10 text-indigo-500" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500">
+                <Inbox size={30} />
               </div>
 
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="mt-5 text-xl font-bold text-slate-900">
                 No quizzes found
               </h2>
 
-              <p className="text-slate-500 mt-3 max-w-md mx-auto">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
                 {quizzes.length === 0
                   ? "You haven't created any quizzes yet. Create your first quiz from the dashboard."
-                  : "No quizzes match your current search or filter."}
+                  : "No quizzes match your current search or difficulty filter."}
               </p>
 
               <button
                 onClick={() => {
-                  if (quizzes.length === 0) {
-                    navigate("/dashboard");
+                  if (
+                    quizzes.length ===
+                    0
+                  ) {
+                    navigate(
+                      "/dashboard"
+                    );
                   } else {
                     clearFilters();
                   }
                 }}
-                className="inline-flex items-center gap-2 mt-7 px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-700"
               >
                 {quizzes.length === 0 ? (
                   <>
-                    <Plus className="w-5 h-5" />
+                    <Plus size={17} />
                     Create Quiz
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-5 h-5" />
+                    <RefreshCw size={17} />
                     Reset Filters
                   </>
                 )}
@@ -839,11 +1010,13 @@ const ListPage = () => {
             </div>
           )}
 
-        {/* QUIZ GRID */}
+        {/* =====================================================
+            QUIZ GRID
+        ====================================================== */}
         {!loading &&
           !error &&
           filteredQuizzes.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 
               {filteredQuizzes.map(
                 (quiz) => {
@@ -854,7 +1027,9 @@ const ListPage = () => {
                   ).toLowerCase();
 
                   const normalizedLevel =
-                    levelToKey[rawLevel] ||
+                    levelToKey[
+                      rawLevel
+                    ] ||
                     rawLevel ||
                     "easy";
 
@@ -895,26 +1070,29 @@ const ListPage = () => {
                   return (
                     <article
                       key={quiz.id}
-                      className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col"
+                      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-100/40"
                     >
 
                       {/* CARD HEADER */}
-                      <div className="p-6 bg-slate-900">
-                        <div className="flex items-start justify-between gap-4">
+                      <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-indigo-900 p-6">
 
-                          <div className="flex items-center gap-3 min-w-0">
+                        <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-indigo-400/20 blur-2xl" />
 
-                            <div className="w-11 h-11 shrink-0 rounded-xl bg-white/10 flex items-center justify-center">
-                              <FileQuestion className="w-6 h-6 text-white" />
+                        <div className="relative flex items-start justify-between gap-4">
+
+                          <div className="flex min-w-0 items-center gap-3">
+
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/10">
+                              <FileQuestion size={22} />
                             </div>
 
                             <div className="min-w-0">
-                              <h3 className="text-lg font-bold text-white truncate">
+                              <h3 className="truncate text-lg font-bold text-white">
                                 {title}
                               </h3>
 
                               {topic && (
-                                <p className="text-sm text-slate-300 mt-1 truncate">
+                                <p className="mt-1 truncate text-sm text-indigo-200">
                                   {topic}
                                 </p>
                               )}
@@ -923,49 +1101,57 @@ const ListPage = () => {
                           </div>
 
                           <div
-                            className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${difficulty.badge}`}
+                            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold ${difficulty.badge}`}
                           >
                             <span
-                              className={`w-2 h-2 rounded-full ${difficulty.dot}`}
+                              className={`h-1.5 w-1.5 rounded-full ${difficulty.dot}`}
                             />
 
                             {difficulty.label}
                           </div>
 
                         </div>
+
+                        <div className="relative mt-5 flex items-center gap-2 text-xs font-medium text-indigo-100">
+                          <CheckCircle2
+                            size={14}
+                          />
+                          Ready to manage
+                        </div>
+
                       </div>
 
                       {/* CARD CONTENT */}
-                      <div className="p-6 flex flex-col flex-1">
+                      <div className="flex flex-1 flex-col p-6">
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
 
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                            <div className="flex items-center gap-2 text-slate-500">
-                              <Clock className="w-4 h-4" />
+                          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                            <div className="flex items-center gap-2 text-slate-400">
+                              <Clock size={16} />
 
-                              <span className="text-xs font-medium">
-                                Time Limit
+                              <span className="text-xs font-semibold">
+                                Time
                               </span>
                             </div>
 
-                            <p className="text-xl font-bold text-slate-900 mt-2">
+                            <p className="mt-2 text-lg font-extrabold text-slate-900">
                               {time
                                 ? `${time} min`
                                 : "—"}
                             </p>
                           </div>
 
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                            <div className="flex items-center gap-2 text-slate-500">
-                              <FileQuestion className="w-4 h-4" />
+                          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                            <div className="flex items-center gap-2 text-slate-400">
+                              <FileQuestion size={16} />
 
-                              <span className="text-xs font-medium">
+                              <span className="text-xs font-semibold">
                                 Questions
                               </span>
                             </div>
 
-                            <p className="text-xl font-bold text-slate-900 mt-2">
+                            <p className="mt-2 text-lg font-extrabold text-slate-900">
                               {questionCount ||
                                 "—"}
                             </p>
@@ -973,8 +1159,10 @@ const ListPage = () => {
 
                         </div>
 
-                        <div className="flex items-center gap-3 mt-5 text-sm text-slate-500">
-                          <CalendarDays className="w-4 h-4 shrink-0" />
+                        <div className="mt-5 flex items-center gap-2 text-sm text-slate-500">
+                          <CalendarDays
+                            size={16}
+                          />
 
                           <span>
                             Created{" "}
@@ -984,11 +1172,11 @@ const ListPage = () => {
                           </span>
                         </div>
 
-                        {/* CARD ACTION */}
-                        <div className="mt-auto pt-6 flex items-center justify-between border-t border-slate-100">
+                        {/* ACTIONS */}
+                        <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-6">
 
-                          <span className="text-xs text-slate-400">
-                            Quiz ID:{" "}
+                          <span className="text-[11px] font-medium text-slate-400">
+                            ID:{" "}
                             {String(
                               quiz.id
                             ).slice(-6)}
@@ -996,20 +1184,18 @@ const ListPage = () => {
 
                           <div className="flex items-center gap-2">
 
-                            {/* EDIT */}
                             <button
                               onClick={() =>
                                 handleEdit(
                                   quiz
                                 )
                               }
-                              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-100"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit size={15} />
                               Edit
                             </button>
 
-                            {/* DELETE */}
                             <button
                               onClick={() =>
                                 handleDelete(
@@ -1017,9 +1203,9 @@ const ListPage = () => {
                                   title
                                 )
                               }
-                              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition"
+                              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 size={15} />
                               Delete
                             </button>
 
@@ -1038,44 +1224,53 @@ const ListPage = () => {
 
       </main>
 
-      {/* ============================= */}
-      {/* EDIT QUIZ MODAL */}
-      {/* ============================= */}
-
+      {/* =====================================================
+          EDIT QUIZ MODAL
+      ====================================================== */}
       {editingQuiz &&
         editForm && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-5">
 
             {/* BACKDROP */}
             <div
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-950/65 backdrop-blur-sm"
               onClick={closeEditModal}
             />
 
             {/* MODAL */}
-            <div className="relative w-full max-w-5xl max-h-[92vh] overflow-hidden bg-white rounded-2xl shadow-2xl">
+            <div className="relative flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl">
 
               {/* MODAL HEADER */}
-              <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-5 sm:px-7 py-5">
+              <div className="shrink-0 border-b border-slate-200 bg-white px-5 py-5 sm:px-7">
 
                 <div className="flex items-start justify-between gap-4">
 
-                  <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      Edit Quiz
-                    </h2>
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                      <Edit size={20} />
+                    </div>
 
-                    <p className="text-sm text-slate-500 mt-1">
-                      Update quiz details or individual questions.
-                    </p>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                        Quiz Editor
+                      </p>
+
+                      <h2 className="mt-1 text-xl font-extrabold text-slate-900 sm:text-2xl">
+                        Edit Quiz
+                      </h2>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        Update quiz details and questions.
+                      </p>
+                    </div>
                   </div>
 
                   <button
                     onClick={closeEditModal}
                     disabled={savingEdit}
-                    className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100 transition disabled:opacity-50"
+                    className="rounded-xl border border-slate-200 p-2.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <X className="w-5 h-5" />
+                    <X size={19} />
                   </button>
 
                 </div>
@@ -1083,20 +1278,25 @@ const ListPage = () => {
               </div>
 
               {/* MODAL CONTENT */}
-              <div className="overflow-y-auto max-h-[calc(92vh-145px)] px-5 sm:px-7 py-6">
+              <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 px-5 py-6 sm:px-7">
 
-                {/* QUIZ DETAILS */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6">
+                {/* DETAILS */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
 
-                  <h3 className="font-bold text-slate-900 mb-4">
-                    Quiz Details
-                  </h3>
+                  <div className="mb-5">
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Quiz Details
+                    </h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <p className="mt-1 text-sm text-slate-500">
+                      Update the basic information of this quiz.
+                    </p>
+                  </div>
 
-                    {/* TECHNOLOGY */}
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="mb-2 block text-sm font-semibold text-slate-700">
                         Technology
                       </label>
 
@@ -1111,84 +1311,95 @@ const ListPage = () => {
                             e.target.value
                           )
                         }
-                        className="w-full h-11 px-4 rounded-xl border border-slate-300 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
                       />
                     </div>
 
-                    {/* LEVEL */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="mb-2 block text-sm font-semibold text-slate-700">
                         Level
                       </label>
 
-                      <select
-                        value={
-                          editForm.level
-                        }
-                        onChange={(e) =>
-                          updateEditField(
-                            "level",
-                            e.target.value
-                          )
-                        }
-                        className="w-full h-11 px-4 rounded-xl border border-slate-300 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                      >
-                        <option value="Basic">
-                          Basic
-                        </option>
+                      <div className="relative">
+                        <select
+                          value={
+                            editForm.level
+                          }
+                          onChange={(e) =>
+                            updateEditField(
+                              "level",
+                              e.target.value
+                            )
+                          }
+                          className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 pr-10 text-sm font-medium text-slate-800 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+                        >
+                          <option value="Basic">
+                            Basic
+                          </option>
 
-                        <option value="Intermediate">
-                          Intermediate
-                        </option>
+                          <option value="Intermediate">
+                            Intermediate
+                          </option>
 
-                        <option value="Advanced">
-                          Advanced
-                        </option>
-                      </select>
+                          <option value="Advanced">
+                            Advanced
+                          </option>
+                        </select>
+
+                        <ChevronDown
+                          size={16}
+                          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                      </div>
                     </div>
 
-                    {/* TIME LIMIT */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Time Limit (minutes)
+                      <label className="mb-2 block text-sm font-semibold text-slate-700">
+                        Time Limit
                       </label>
 
-                      <input
-                        type="number"
-                        min="1"
-                        value={
-                          editForm.timeLimit
-                        }
-                        onChange={(e) =>
-                          updateEditField(
-                            "timeLimit",
-                            e.target.value
-                          )
-                        }
-                        className="w-full h-11 px-4 rounded-xl border border-slate-300 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                      />
+                      <div className="relative">
+                        <Clock
+                          size={17}
+                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+
+                        <input
+                          type="number"
+                          min="1"
+                          value={
+                            editForm.timeLimit
+                          }
+                          onChange={(e) =>
+                            updateEditField(
+                              "timeLimit",
+                              e.target.value
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+                        />
+                      </div>
                     </div>
 
                   </div>
-
-                </div>
+                </section>
 
                 {/* QUESTIONS */}
-                <div className="space-y-5">
+                <section className="mt-6">
 
-                  <div className="flex items-center justify-between">
+                  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 
                     <div>
                       <h3 className="text-lg font-bold text-slate-900">
                         Questions
                       </h3>
 
-                      <p className="text-sm text-slate-500 mt-1">
-                        Edit questions, options and correct answers.
+                      <p className="mt-1 text-sm text-slate-500">
+                        Edit text, options, and correct answers.
                       </p>
                     </div>
 
-                    <span className="px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 text-sm font-semibold">
+                    <span className="w-fit rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600">
                       {
                         editForm.questions
                           .length
@@ -1200,189 +1411,198 @@ const ListPage = () => {
 
                   {editForm.questions.length ===
                     0 && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-amber-700 text-sm">
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm font-medium text-amber-700">
                       This quiz does not contain any editable questions.
                     </div>
                   )}
 
-                  {editForm.questions.map(
-                    (
-                      question,
-                      questionIndex
-                    ) => (
-                      <div
-                        key={
-                          questionIndex
-                        }
-                        className="border border-slate-200 rounded-2xl overflow-hidden"
-                      >
+                  <div className="space-y-5">
 
-                        {/* QUESTION HEADER */}
-                        <div className="bg-slate-900 px-5 py-4 flex items-center justify-between">
+                    {editForm.questions.map(
+                      (
+                        question,
+                        questionIndex
+                      ) => (
+                        <article
+                          key={
+                            questionIndex
+                          }
+                          className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                        >
 
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
-                              <FileQuestion className="w-5 h-5 text-white" />
+                          <div className="flex items-center justify-between bg-gradient-to-r from-slate-950 to-indigo-950 px-5 py-4">
+
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white">
+                                <FileQuestion
+                                  size={18}
+                                />
+                              </div>
+
+                              <div>
+                                <p className="text-sm font-bold text-white">
+                                  Question{" "}
+                                  {questionIndex +
+                                    1}
+                                </p>
+
+                                <p className="text-xs text-slate-300">
+                                  Select the correct option
+                                </p>
+                              </div>
+                            </div>
+
+                          </div>
+
+                          <div className="space-y-5 p-5 sm:p-6">
+
+                            <div>
+                              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                Question Text
+                              </label>
+
+                              <textarea
+                                rows="3"
+                                value={
+                                  question.question
+                                }
+                                onChange={(e) =>
+                                  updateQuestion(
+                                    questionIndex,
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Enter question"
+                                className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-800 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+                              />
                             </div>
 
                             <div>
-                              <p className="text-white font-semibold">
-                                Question{" "}
-                                {questionIndex +
-                                  1}
-                              </p>
 
-                              <p className="text-xs text-slate-400">
-                                Select the correct answer below
-                              </p>
-                            </div>
-                          </div>
+                              <div className="mb-3 flex items-center justify-between gap-3">
+                                <label className="text-sm font-semibold text-slate-700">
+                                  Options
+                                </label>
 
-                        </div>
+                                <span className="text-xs text-slate-400">
+                                  Click a letter to mark the correct answer
+                                </span>
+                              </div>
 
-                        <div className="p-5 space-y-5">
+                              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 
-                          {/* QUESTION */}
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">
-                              Question
-                            </label>
-
-                            <textarea
-                              rows="3"
-                              value={
-                                question.question
-                              }
-                              onChange={(e) =>
-                                updateQuestion(
-                                  questionIndex,
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-800 outline-none resize-y focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                              placeholder="Enter question"
-                            />
-                          </div>
-
-                          {/* OPTIONS */}
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-3">
-                              Options
-                            </label>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                              {question.options.map(
-                                (
-                                  option,
-                                  optionIndex
-                                ) => {
-                                  const optionKey =
-                                    [
-                                      "A",
-                                      "B",
-                                      "C",
-                                      "D",
-                                    ][
-                                      optionIndex
-                                    ];
-
-                                  const isCorrect =
-                                    question.answerKey ===
-                                    optionKey;
-
-                                  return (
-                                    <div
-                                      key={
+                                {question.options.map(
+                                  (
+                                    option,
+                                    optionIndex
+                                  ) => {
+                                    const optionKey =
+                                      [
+                                        "A",
+                                        "B",
+                                        "C",
+                                        "D",
+                                      ][
                                         optionIndex
-                                      }
-                                      className={`rounded-xl border p-3 transition ${
-                                        isCorrect
-                                          ? "border-emerald-300 bg-emerald-50"
-                                          : "border-slate-200 bg-white"
-                                      }`}
-                                    >
+                                      ];
 
-                                      <div className="flex items-center gap-3">
+                                    const isCorrect =
+                                      question.answerKey ===
+                                      optionKey;
 
-                                        {/* CORRECT ANSWER RADIO */}
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            updateCorrectAnswer(
-                                              questionIndex,
-                                              optionKey
-                                            )
-                                          }
-                                          className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center font-bold text-sm transition ${
-                                            isCorrect
-                                              ? "bg-emerald-600 text-white"
-                                              : "bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700"
-                                          }`}
-                                          title={
-                                            isCorrect
-                                              ? "Correct answer"
-                                              : "Mark as correct"
-                                          }
-                                        >
-                                          {optionKey}
-                                        </button>
+                                    return (
+                                      <div
+                                        key={
+                                          optionIndex
+                                        }
+                                        className={`rounded-xl border p-3 transition ${
+                                          isCorrect
+                                            ? "border-emerald-300 bg-emerald-50"
+                                            : "border-slate-200 bg-slate-50"
+                                        }`}
+                                      >
 
-                                        <input
-                                          type="text"
-                                          value={
-                                            option
-                                          }
-                                          onChange={(
-                                            e
-                                          ) =>
-                                            updateOption(
-                                              questionIndex,
-                                              optionIndex,
+                                        <div className="flex items-center gap-3">
+
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              updateCorrectAnswer(
+                                                questionIndex,
+                                                optionKey
+                                              )
+                                            }
+                                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold transition ${
+                                              isCorrect
+                                                ? "bg-emerald-600 text-white shadow-sm"
+                                                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-indigo-50 hover:text-indigo-600"
+                                            }`}
+                                            title={
+                                              isCorrect
+                                                ? "Correct answer"
+                                                : "Mark as correct"
+                                            }
+                                          >
+                                            {optionKey}
+                                          </button>
+
+                                          <input
+                                            type="text"
+                                            value={
+                                              option
+                                            }
+                                            onChange={(
                                               e
-                                                .target
-                                                .value
-                                            )
-                                          }
-                                          className="flex-1 min-w-0 h-10 px-3 rounded-lg border border-slate-300 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                                          placeholder={`Option ${optionKey}`}
-                                        />
+                                            ) =>
+                                              updateOption(
+                                                questionIndex,
+                                                optionIndex,
+                                                e.target
+                                                  .value
+                                              )
+                                            }
+                                            placeholder={`Option ${optionKey}`}
+                                            className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                                          />
+
+                                        </div>
+
+                                        {isCorrect && (
+                                          <div className="mt-2 flex items-center gap-1.5 pl-12 text-xs font-bold text-emerald-700">
+                                            <CheckCircle2
+                                              size={14}
+                                            />
+                                            Correct Answer
+                                          </div>
+                                        )}
 
                                       </div>
+                                    );
+                                  }
+                                )}
 
-                                      {isCorrect && (
-                                        <div className="flex items-center gap-1.5 mt-2 ml-12 text-xs font-semibold text-emerald-700">
-                                          <CheckCircle2 className="w-4 h-4" />
-                                          Correct Answer
-                                        </div>
-                                      )}
-
-                                    </div>
-                                  );
-                                }
-                              )}
-
+                              </div>
                             </div>
+
                           </div>
+                        </article>
+                      )
+                    )}
 
-                        </div>
-                      </div>
-                    )
-                  )}
-
-                </div>
+                  </div>
+                </section>
 
               </div>
 
-              {/* MODAL FOOTER */}
-              <div className="sticky bottom-0 bg-white border-t border-slate-200 px-5 sm:px-7 py-4">
+              {/* FOOTER */}
+              <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-4 sm:px-7">
 
-                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 
                   <button
                     onClick={closeEditModal}
                     disabled={savingEdit}
-                    className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-100 transition disabled:opacity-50"
+                    className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -1390,16 +1610,19 @@ const ListPage = () => {
                   <button
                     onClick={handleSaveEdit}
                     disabled={savingEdit}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-indigo-100 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {savingEdit ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        Saving...
+                        <RefreshCw
+                          size={17}
+                          className="animate-spin"
+                        />
+                        Saving Changes...
                       </>
                     ) : (
                       <>
-                        <Save className="w-4 h-4" />
+                        <Save size={17} />
                         Save Changes
                       </>
                     )}
